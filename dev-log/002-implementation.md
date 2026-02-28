@@ -168,3 +168,41 @@
 - TypeScript: 0 에러
 - 유닛 테스트: 133개 통과
 - E2E 테스트: 10개 통과 (16.5s)
+
+---
+
+## Review Cycle #2: 기술 스택 베스트 프랙티스 기반 심층 리뷰
+
+> React 19, TypeScript strict, Zustand, Tailwind, Playwright 공식 가이드라인 기반 리뷰.
+> 24개 실질 이슈 발견 (HIGH 1, MEDIUM 8, LOW 15), 주요 이슈 수정.
+
+### 발견된 이슈와 수정 내역
+
+| # | 우선순위 | 이슈 | 수정 |
+|---|---------|------|------|
+| 6 | HIGH | 적 resolveSkill 실패 시 플레이어 액션까지 유실 | 기본공격 fallback 추가 |
+| 5 | MEDIUM | `difficulty!` 비null 단언 | 명시적 null 가드로 교체 |
+| 12 | MEDIUM | `lang="en"` + placeholder title | `lang="ko"` + "턴제 배틀 게임" |
+| 21 | MEDIUM | effect 문자열(+/-) 파싱으로 buff/debuff 분류 | TurnLogEntry에 skillType 필드 추가, exhaustive switch |
+| 23 | MEDIUM | ErrorBoundary 없음 | App에 ErrorBoundary 래핑 |
+| 24 | MEDIUM | E2E waitForTimeout 플레이키 | 조건 기반 대기(버튼 활성화) — 14s로 단축 |
+| 25 | LOW→MEDIUM | "라운드 증가" assertion 약함 | roundNum >= 2 명시적 비교 |
+| 16 | MEDIUM | HP/MP 바 접근성 없음 | progressbar ARIA 속성 추가 |
+| 32 | LOW | isProcessingQueue dead state | 제거 |
+| 33 | LOW | SkillForm 타입 버튼 접근성 | aria-pressed 추가 |
+| 15 | LOW | TYPE_LABELS Record<string> | Record<SkillType>으로 강화 |
+| 26 | LOW | enemy-ai 중복 hpRatio 조건 | 제거 |
+
+### 미수정 이슈 (의도적 보류)
+
+| # | 이슈 | 보류 이유 |
+|---|------|----------|
+| 2 | getAllSkills/getRemainingPoints 파생 상태 | 현재 co-subscription으로 정상 동작, 과도한 리팩토링 |
+| 9 | SkillForm에 RHF+Zod 적용 | 번들 사이즈 감소보다 기존 패턴 일관성 유지 |
+| 14 | number input 중간값 문제 | UX 영향 미미, 과도한 복잡도 추가 |
+
+### 검증 결과
+- ESLint: 0 에러
+- TypeScript: 0 에러
+- 유닛 테스트: 133개 통과
+- E2E 테스트: 10개 통과 (14.0s, 이전 대비 2.5s 단축)
