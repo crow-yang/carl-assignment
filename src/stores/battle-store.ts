@@ -254,10 +254,8 @@ function resolveSkill(character: Character, action: BattleAction): Skill | null 
 function applyActorResult(actor: Character, result: SkillExecutionResult): Character {
   return {
     ...actor,
+    currentHp: Math.min(actor.baseStats.hp, actor.currentHp + result.actorHpChange),
     currentMp: Math.max(0, actor.currentMp + result.actorMpChange),
-    currentHp: result.logEntry.heal
-      ? Math.min(actor.baseStats.hp, actor.currentHp + result.logEntry.heal)
-      : actor.currentHp,
     activeEffects: result.newActorEffects,
   }
 }

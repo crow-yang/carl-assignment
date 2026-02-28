@@ -8,7 +8,8 @@ function mpChange(cost: number): number {
 }
 
 export interface SkillExecutionResult {
-  targetHpChange: number    // 음수 = 데미지, 양수 = 힐
+  targetHpChange: number    // 음수 = 데미지
+  actorHpChange: number     // 양수 = 힐 (최대 HP 초과 불가 적용 후)
   actorMpChange: number     // 음수 = MP 소모
   newActorEffects: ActiveEffect[]
   newTargetEffects: ActiveEffect[]
@@ -45,6 +46,7 @@ export function executeSkill(
 
       return {
         targetHpChange: -damage,
+        actorHpChange: 0,
         actorMpChange: mpChange(skill.mpCost),
         newActorEffects: actor.activeEffects,
         newTargetEffects: target.activeEffects,
@@ -64,6 +66,7 @@ export function executeSkill(
     case 'defend': {
       return {
         targetHpChange: 0,
+        actorHpChange: 0,
         actorMpChange: 0,
         newActorEffects: actor.activeEffects,
         newTargetEffects: target.activeEffects,
@@ -84,6 +87,7 @@ export function executeSkill(
 
       return {
         targetHpChange: 0,
+        actorHpChange: actualHeal,
         actorMpChange: mpChange(skill.mpCost),
         newActorEffects: actor.activeEffects,
         newTargetEffects: target.activeEffects,
@@ -110,6 +114,7 @@ export function executeSkill(
 
       return {
         targetHpChange: 0,
+        actorHpChange: 0,
         actorMpChange: mpChange(skill.mpCost),
         newActorEffects: newEffects,
         newTargetEffects: target.activeEffects,
@@ -136,6 +141,7 @@ export function executeSkill(
 
       return {
         targetHpChange: 0,
+        actorHpChange: 0,
         actorMpChange: mpChange(skill.mpCost),
         newActorEffects: actor.activeEffects,
         newTargetEffects: newEffects,
