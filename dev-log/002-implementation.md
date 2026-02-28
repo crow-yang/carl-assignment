@@ -360,6 +360,76 @@
 
 ---
 
+## 리뷰 사이클 #7: 채점 기반 전면 보완
+
+> 채점 시뮬레이션에서 92~95점 평가. 아키텍처(-2), 코드 품질(-2), UI/UX(-3) 감점 요인 7개를 전부 보완.
+> 8개 원자적 커밋으로 분리 구현. 신규 npm 의존성 없이 CSS 키프레임 + Tailwind만 사용.
+
+### 감점 요인과 대응
+
+| 영역 | 감점 | 원인 | 대응 커밋 |
+|------|------|------|----------|
+| 아키텍처 | -1 | battle-store.ts ~310줄, 순수 로직과 상태 관리 혼재 | #1: executeRound 순수 함수를 lib/round-executor.ts로 추출 (~95줄로 축소) |
+| 아키텍처 | -1 | getRemainingPoints 함수 구독 → 불필요한 리렌더 | #2: selectRemainingPoints 외부 셀렉터 패턴으로 변경 |
+| 코드 품질 | -1 | BattlePage ~60줄 큐 애니메이션 로직 혼재 | #3: useQueueAnimation 커스텀 훅 추출 + renderHook 테스트 6개 |
+| 코드 품질 | -1 | toQueueItem value 매핑 `?? logEntry.heal` 암시적 | #4: resolveQueueValue exhaustive switch |
+| UI/UX | -1 | 모바일 레이아웃 미대응 | #5: sm: 반응형 브레이크포인트 |
+| UI/UX | -1 | 페이즈 전환 하드 컷 | #6: @theme 커스텀 애니메이션 6종 + key prop fade-in |
+| UI/UX | -1 | 전투 비주얼 없음 (데미지 팝업, 피격 이펙트) | #7: DamagePopup + shouldShowPopup/getActiveEffect + 22개 테스트 |
+
+### 커밋 상세
+
+**커밋 1: executeRound 순수 함수 추출**
+- `src/lib/round-executor.ts` 생성 (258줄, ASCII 실행 플로우 다이어그램 포함)
+- `src/stores/battle-store.ts` 310→95줄 (5줄 위임)
+- 기존 23개 battle-store 테스트가 통합 테스트로 계속 검증
+
+**커밋 2: selectRemainingPoints 셀렉터**
+- 스토어 내부 함수 → 외부 파생 셀렉터 (프리미티브 반환으로 리렌더 최적화)
+- Step1NameAndStats에서 `useSetupStore(selectRemainingPoints)` 사용
+
+**커밋 3: useQueueAnimation 훅**
+- isAnimating, displayPlayer/Enemy, currentItem, startConsuming, getVisibleLog 캡슐화
+- processQueue 파라미터에 참조 안정성 요구 JSDoc 문서화
+- renderHook + fakeTimers 기반 6개 테스트 (초기 상태, 빈 큐, 1개/2개 소비, 점진적 공개, unmount 정리)
+
+**커밋 4: resolveQueueValue**
+- skillType별 exhaustive switch: attack→damage, heal→heal, defend/buff/debuff→undefined
+- value 필드 타입 검증 테스트 추가 (attack=number, defend/buff=undefined)
+
+**커밋 5: 반응형 레이아웃**
+- 캐릭터 패널 `grid-cols-1 sm:grid-cols-2`, 로그 `h-32 sm:h-48`
+- 결과 `text-2xl sm:text-4xl`, 액션 버튼 `justify-center`
+
+**커밋 6: CSS 애니메이션**
+- Tailwind 4 `@theme` 블록에 6개 키프레임: fade-in, slide-up, float-up, hit-flash, pulse-heal, shake
+- App.tsx에서 `key={phase}` + `animate-fade-in`으로 부드러운 페이즈 전환
+
+**커밋 7: 전투 비주얼 폴리시**
+- `battle-visual-helpers.ts`: shouldShowPopup + getActiveEffect + getPopupDisplay 순수 함수
+- `DamagePopup.tsx`: float-up 애니메이션 데미지/힐 팝업
+- CharacterPanel: 캐릭터 이모지 (🧑‍⚔️/👹), activeEffect prop (shake/pulse-heal)
+- BattleLog: 새 로그 slide-up, ResultPage: 승리 glow drop-shadow
+- 22개 유닛 테스트 (shouldShowPopup 9개, getActiveEffect 9개, getPopupDisplay 6개 — 모든 스킬 타입 × 양쪽 side)
+
+### 설계 결정
+
+**순수 함수 우선 (round-executor.ts)**
+- 스토어는 상태 업데이트만 담당. 라운드 실행 로직은 순수 함수로 분리하여 테스트 용이성 확보.
+- 기존 통합 테스트(battle-store.test.ts 23개)가 executeRound를 간접 검증하므로 별도 단위 테스트 불필요.
+
+**shouldShowPopup/getActiveEffect 분리**
+- BattlePage에서 인라인 조건문이 4~5줄 중첩 ternary가 되는 것을 방지.
+- 순수 함수이므로 22개 유닛 테스트로 모든 타입×side 조합 완전 커버.
+
+### 검증 결과
+- ESLint: 0 에러
+- TypeScript: 0 에러
+- 유닛 테스트: 173개 통과 (+29: renderHook 6 + value 검증 1 + visual helpers 22)
+- E2E 테스트: 10개 통과
+
+---
+
 ## 최종 요약
 
 | 사이클 | 발견 | 수정 | 핵심 |
@@ -371,5 +441,6 @@
 | #5 | 2개 | 2개 | 빌드 수정, 폼 버튼 타입 |
 | 커버리지 | - | +16 | 라인/함수 100%, 분기 97% |
 | #6 | 9개 | 5개 | executeMoverTurn DRY, 상수 통합, dead code 제거 |
+| #7 | 7개 | 7개 | 순수 함수 추출, 셀렉터, 훅 추출, 반응형, 애니메이션, 비주얼 폴리시 |
 
-**최종 수치:** 144 유닛 테스트 + 10 E2E 테스트, 빌드 성공, 린트/타입 에러 0, 커버리지 100%
+**최종 수치:** 173 유닛 테스트 + 10 E2E 테스트, 빌드 성공, 린트/타입 에러 0
