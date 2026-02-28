@@ -1,16 +1,11 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import {
   getEffectiveStat,
   tickEffects,
   addEffect,
   findExpiringEffects,
-  resetEffectIdCounter,
 } from './effects'
 import type { ActiveEffect } from '../types'
-
-beforeEach(() => {
-  resetEffectIdCounter()
-})
 
 describe('getEffectiveStat', () => {
   it('효과 없으면 기본 스탯 반환', () => {

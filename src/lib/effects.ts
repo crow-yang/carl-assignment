@@ -1,15 +1,8 @@
 import type { ActiveEffect, BuffTargetStat } from '../types'
 
-let effectIdCounter = 0
-
-/** 고유 ID 생성 (테스트 시 리셋 가능하도록 카운터 기반) */
-export function generateEffectId(): string {
-  return `effect-${++effectIdCounter}`
-}
-
-/** 테스트용 카운터 리셋 */
-export function resetEffectIdCounter(): void {
-  effectIdCounter = 0
+/** 고유 ID 생성 (전역 상태 없이 매번 고유값 보장) */
+function generateEffectId(): string {
+  return crypto.randomUUID()
 }
 
 /**

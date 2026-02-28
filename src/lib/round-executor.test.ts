@@ -1,6 +1,5 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { executeRound } from './round-executor'
-import { resetEffectIdCounter } from './effects'
 import { DEFAULT_DEFEND_SKILL } from '../constants'
 import type { BattleState, Character, AttackSkill, HealSkill } from '../types'
 
@@ -34,10 +33,6 @@ function makeBattleState(overrides: Partial<BattleState> = {}): BattleState {
     ...overrides,
   }
 }
-
-beforeEach(() => {
-  resetEffectIdCounter()
-})
 
 describe('executeRound — defensive 브랜치', () => {
   it('적에게 기본 공격 스킬이 없으면 fallback → null 반환', () => {

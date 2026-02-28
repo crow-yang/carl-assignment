@@ -1,6 +1,5 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { executeSkill } from './skill-executor'
-import { resetEffectIdCounter } from './effects'
 import type { Character, AttackSkill, DefendSkill, HealSkill, StatusEffectSkill } from '../types'
 
 function makeCharacter(overrides: Partial<Character> = {}): Character {
@@ -14,10 +13,6 @@ function makeCharacter(overrides: Partial<Character> = {}): Character {
     ...overrides,
   }
 }
-
-beforeEach(() => {
-  resetEffectIdCounter()
-})
 
 describe('executeSkill - attack', () => {
   const skill: AttackSkill = {

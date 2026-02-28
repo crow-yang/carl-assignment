@@ -40,8 +40,6 @@ const initialState: SetupState = {
   difficulty: null,
 }
 
-let skillIdCounter = 0
-
 export const useSetupStore = create<SetupState & SetupActions>((set, get) => ({
   ...initialState,
 
@@ -76,7 +74,7 @@ export const useSetupStore = create<SetupState & SetupActions>((set, get) => ({
     const state = get()
     if (state.customSkills.length >= MAX_CUSTOM_SKILLS) return
 
-    const id = `custom-skill-${++skillIdCounter}`
+    const id = crypto.randomUUID()
     let skill: Skill
 
     switch (input.type) {
@@ -115,7 +113,6 @@ export const useSetupStore = create<SetupState & SetupActions>((set, get) => ({
   getAllSkills: () => [...DEFAULT_SKILLS, ...get().customSkills],
 
   reset: () => {
-    skillIdCounter = 0
     set({ ...initialState, stats: { ...DEFAULT_STATS }, customSkills: [] })
   },
 }))

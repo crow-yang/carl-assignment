@@ -5,7 +5,6 @@ import type {
   Difficulty, Skill, ActionQueueItem, Stats,
 } from '../types'
 import { ENEMY_STATS, ENEMY_NAMES, ENEMY_SKILLS } from '../constants'
-import { resetEffectIdCounter } from '../lib/effects'
 import { determineFirstMover } from '../lib/turn'
 import { executeRound } from '../lib/round-executor'
 
@@ -91,7 +90,6 @@ export const useBattleStore = create<BattleStoreState & BattleStoreActions>((set
   },
 
   reset: () => {
-    resetEffectIdCounter()
     set({ ...initialState })
   },
 }))
