@@ -34,10 +34,10 @@ export function Step1NameAndStats() {
       </div>
 
       {/* 스탯 배분 */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">스탯 배분</h3>
-          <div className="text-sm">
+      <fieldset className="border-0 p-0 m-0">
+        <legend className="flex items-center justify-between mb-4 w-full">
+          <span className="text-lg font-semibold">스탯 배분</span>
+          <span className="text-sm">
             잔여 포인트:{' '}
             <span
               data-testid="remaining-points"
@@ -52,20 +52,21 @@ export function Step1NameAndStats() {
               {remaining}
             </span>
             <span className="text-gray-500"> / {TOTAL_STAT_POINTS}</span>
-          </div>
-        </div>
+          </span>
+        </legend>
 
         <div className="space-y-3">
           {STAT_KEYS.map((stat) => {
             const range = STAT_RANGES[stat]
+            const statLabel = STAT_LABELS[stat]
             return (
-              <div key={stat} className="flex items-center gap-4">
+              <div key={stat} role="group" aria-label={`${statLabel} 배분`} className="flex items-center gap-4">
                 <label className="w-12 text-sm font-medium text-gray-300">
-                  {STAT_LABELS[stat]}
+                  {statLabel}
                 </label>
                 <input
                   type="range"
-                  aria-label={`${STAT_LABELS[stat]} 슬라이더`}
+                  aria-label={`${statLabel} 슬라이더`}
                   min={range.min}
                   max={range.max}
                   value={stats[stat]}
@@ -75,7 +76,7 @@ export function Step1NameAndStats() {
                 <input
                   data-testid={`stat-${stat}`}
                   type="number"
-                  aria-label={`${STAT_LABELS[stat]} 수치 입력`}
+                  aria-label={`${statLabel} 수치 입력`}
                   min={range.min}
                   max={range.max}
                   value={stats[stat]}
@@ -89,7 +90,7 @@ export function Step1NameAndStats() {
             )
           })}
         </div>
-      </div>
+      </fieldset>
 
       {/* 다음 버튼 */}
       <div className="flex justify-end">
