@@ -1,7 +1,16 @@
+import { useGameStore } from './stores/game-store'
+import { SetupPage } from './features/setup/SetupPage'
+import { BattlePage } from './features/battle/BattlePage'
+import { ResultPage } from './features/result/ResultPage'
+
 function App() {
+  const phase = useGameStore((s) => s.phase)
+
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
-      <h1 className="text-3xl font-bold">턴제 배틀 게임</h1>
+    <div className="min-h-screen bg-gray-900 text-white">
+      {phase === 'setup' && <SetupPage />}
+      {phase === 'battle' && <BattlePage />}
+      {phase === 'result' && <ResultPage />}
     </div>
   )
 }
