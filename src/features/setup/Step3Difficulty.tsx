@@ -36,6 +36,7 @@ export function Step3Difficulty() {
             <button
               key={d}
               data-testid={`difficulty-${d}`}
+              aria-pressed={isSelected}
               onClick={() => setDifficulty(d)}
               className={`p-4 rounded-lg border-2 text-left transition-colors ${
                 isSelected
