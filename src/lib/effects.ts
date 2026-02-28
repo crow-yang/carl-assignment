@@ -35,6 +35,11 @@ export function getEffectiveStat(
   return Math.max(0, baseStat + modifier)
 }
 
+/** tick 전 만료 예정 효과를 반환 (remainingTurns === 1인 효과는 tick 후 제거됨) */
+export function findExpiringEffects(effects: ActiveEffect[]): ActiveEffect[] {
+  return effects.filter((e) => e.remainingTurns === 1)
+}
+
 /**
  * 턴 종료 시 모든 효과의 remainingTurns를 1 감소.
  * 0이 된 효과는 제거. 원본 배열을 변경하지 않음.
