@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { SKILL_TYPE_LABELS } from '../../constants'
+import { validateCustomSkill } from '../../lib/validation'
+import type { CustomSkillFormData } from '../../schemas'
 import type { CustomSkillType, BuffTargetStat } from '../../types'
 
 interface SkillFormProps {
@@ -28,17 +30,17 @@ export function SkillForm({ onSubmit, onCancel }: SkillFormProps) {
   const [amount, setAmount] = useState(5)
   const [duration, setDuration] = useState(3)
 
-  const isNameValid = name.length >= 1 && name.length <= 8
-  const isMpValid = mpCost >= 1 && mpCost <= 30
-
-  let isTypeFieldsValid = true
-  if (type === 'attack') isTypeFieldsValid = multiplier >= 1.0 && multiplier <= 3.0
-  if (type === 'heal') isTypeFieldsValid = healAmount >= 10 && healAmount <= 50
-  if (type === 'buff' || type === 'debuff') {
-    isTypeFieldsValid = amount >= 1 && amount <= 10 && duration >= 1 && duration <= 5
-  }
-
-  const canSubmit = isNameValid && isMpValid && isTypeFieldsValid
+  const formData: CustomSkillFormData = (() => {
+    const base = { name, mpCost }
+    switch (type) {
+      case 'attack': return { ...base, type, multiplier }
+      case 'heal': return { ...base, type, healAmount }
+      case 'buff':
+      case 'debuff': return { ...base, type, targetStat, amount, duration }
+    }
+  })()
+  const validation = validateCustomSkill(formData)
+  const canSubmit = validation.valid
 
   const handleSubmit = () => {
     if (!canSubmit) return
@@ -209,6 +211,11 @@ export function SkillForm({ onSubmit, onCancel }: SkillFormProps) {
           취소
         </button>
       </div>
+
+      {/* 검증 에러 메시지 */}
+      {!validation.valid && name.length > 0 && (
+        <p className="text-sm text-red-400">{validation.errors[0]}</p>
+      )}
     </form>
   )
 }
