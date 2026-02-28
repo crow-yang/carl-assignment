@@ -49,7 +49,7 @@ describe('enqueueAll', () => {
 
 describe('dequeue', () => {
   it('FIFO 순서로 꺼냄', () => {
-    let q = enqueueAll(createQueue(), [makeItem('첫번째'), makeItem('두번째')])
+    const q = enqueueAll(createQueue(), [makeItem('첫번째'), makeItem('두번째')])
     const r1 = dequeue(q)
     expect(r1.item?.description).toBe('첫번째')
     expect(r1.remaining).toHaveLength(1)

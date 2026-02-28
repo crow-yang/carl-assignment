@@ -40,7 +40,7 @@ function defend(): BattleAction {
   return { type: 'defend' }
 }
 
-function useSkill(skillId: string): BattleAction {
+function skillAction(skillId: string): BattleAction {
   return { type: 'skill', skillId }
 }
 
@@ -50,7 +50,7 @@ function decideEasy(self: Character, rng: () => number): BattleAction {
   const smash = findUsableSkill(self, 'enemy-smash-easy')
 
   if (roll < 0.1) return defend()
-  if (roll < 0.3 && smash) return useSkill(smash.id)
+  if (roll < 0.3 && smash) return skillAction(smash.id)
   return basicAttack()
 }
 
@@ -63,15 +63,15 @@ function decideNormal(self: Character, rng: () => number): BattleAction {
 
   // HP <= 50%: 방어적 행동
   if (hpRatio <= 0.5) {
-    if (heal && hpRatio <= 0.7 && roll < 0.4) return useSkill(heal.id)
+    if (heal && hpRatio <= 0.7 && roll < 0.4) return skillAction(heal.id)
     if (roll < 0.6) return defend()
-    if (smash && roll < 0.8) return useSkill(smash.id)
+    if (smash && roll < 0.8) return skillAction(smash.id)
     return basicAttack()
   }
 
   // HP > 50%: 공격적 행동
-  if (smash && roll < 0.3) return useSkill(smash.id)
-  if (heal && hpRatio <= 0.7 && roll < 0.4) return useSkill(heal.id)
+  if (smash && roll < 0.3) return skillAction(smash.id)
+  if (heal && hpRatio <= 0.7 && roll < 0.4) return skillAction(heal.id)
   if (roll < 0.9) return basicAttack()
   return defend()
 }
@@ -86,7 +86,7 @@ function decideHard(self: Character, opponent: Character, rng: () => number): Ba
 
   // 1. 위기 상황 (HP <= 30%): 생존 우선
   if (hpRatio <= 0.3) {
-    if (heal) return useSkill(heal.id)
+    if (heal) return skillAction(heal.id)
     return defend()
   }
 
@@ -94,14 +94,14 @@ function decideHard(self: Character, opponent: Character, rng: () => number): Ba
   const hasDefDebuff = opponent.activeEffects.some(
     (e) => e.type === 'debuff' && e.targetStat === 'def',
   )
-  if (!hasDefDebuff && weaken) return useSkill(weaken.id)
+  if (!hasDefDebuff && weaken) return skillAction(weaken.id)
 
   // 3. 상대 HP 낮으면 강타로 마무리
-  if (opponentHpRatio <= 0.3 && smash) return useSkill(smash.id)
+  if (opponentHpRatio <= 0.3 && smash) return skillAction(smash.id)
 
   // 4. 일반 상황: 강타/기본공격 번갈아
   const roll = rng()
-  if (smash && roll < 0.5) return useSkill(smash.id)
-  if (heal && hpRatio <= 0.6 && roll < 0.7) return useSkill(heal.id)
+  if (smash && roll < 0.5) return skillAction(smash.id)
+  if (heal && hpRatio <= 0.6 && roll < 0.7) return skillAction(heal.id)
   return basicAttack()
 }
