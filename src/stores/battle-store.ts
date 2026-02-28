@@ -5,7 +5,7 @@ import type {
 } from '../types'
 import { ENEMY_STATS, ENEMY_NAMES, ENEMY_SKILLS } from '../constants'
 import { executeSkill, type SkillExecutionResult } from '../lib/skill-executor'
-import { tickEffects, getEffectiveStat } from '../lib/effects'
+import { tickEffects } from '../lib/effects'
 import { determineFirstMover, checkBattleEnd } from '../lib/turn'
 import { decideEnemyAction } from '../lib/enemy-ai'
 import { nextPhase } from '../lib/battle-state-machine'
@@ -54,9 +54,8 @@ export const useBattleStore = create<BattleStoreState & BattleStoreActions>((set
       activeEffects: [],
     }
 
-    const playerSpd = getEffectiveStat(playerStats.spd, 'def', []) // spd는 버프 대상 아님
-    const enemySpd = getEffectiveStat(enemyStats.spd, 'def', [])
-    const isPlayerFirst = determineFirstMover(playerSpd, enemySpd) === 'player'
+    // SPD는 버프/디버프 대상이 아니므로 base값을 그대로 사용
+    const isPlayerFirst = determineFirstMover(playerStats.spd, enemyStats.spd) === 'player'
 
     const battleState: BattleState = {
       round: 1,
@@ -195,8 +194,8 @@ export const useBattleStore = create<BattleStoreState & BattleStoreActions>((set
     const nextRound = round + 1
     const roundEndResult = checkBattleEnd(updatedPlayer.currentHp, updatedEnemy.currentHp, nextRound)
     const newIsPlayerFirst = determineFirstMover(
-      getEffectiveStat(updatedPlayer.baseStats.spd, 'def', []),
-      getEffectiveStat(updatedEnemy.baseStats.spd, 'def', []),
+      updatedPlayer.baseStats.spd,
+      updatedEnemy.baseStats.spd,
     ) === 'player'
 
     const newPhase = roundEndResult
