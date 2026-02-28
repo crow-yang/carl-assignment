@@ -1,5 +1,14 @@
 import { useRef, useEffect } from 'react'
-import type { TurnLogEntry } from '../../types'
+import { SKILL_TYPE_LABELS } from '../../constants'
+import type { TurnLogEntry, SkillType } from '../../types'
+
+const SKILL_TYPE_STYLE: Record<SkillType, string> = {
+  attack: 'bg-red-900/60 text-red-300',
+  defend: 'bg-blue-900/60 text-blue-300',
+  heal:   'bg-green-900/60 text-green-300',
+  buff:   'bg-yellow-900/60 text-yellow-300',
+  debuff: 'bg-purple-900/60 text-purple-300',
+}
 
 interface BattleLogProps {
   log: TurnLogEntry[]
@@ -33,7 +42,10 @@ export function BattleLog({ log }: BattleLogProps) {
               entry.actor === 'player' ? 'text-blue-300' : 'text-red-300'
             }`}
           >
-            <span className="text-gray-500 text-xs mr-2">R{entry.round}</span>
+            <span className="text-gray-500 text-xs mr-1.5">R{entry.round}</span>
+            <span className={`text-[10px] px-1.5 rounded mr-1.5 ${SKILL_TYPE_STYLE[entry.skillType]}`}>
+              {SKILL_TYPE_LABELS[entry.skillType]}
+            </span>
             {entry.action}
           </div>
         ))
