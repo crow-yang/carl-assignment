@@ -206,8 +206,9 @@ export const useBattleStore = create<BattleStoreState & BattleStoreActions>((set
         round: roundEndResult ? round : nextRound,
         player: updatedPlayer,
         enemy: updatedEnemy,
-        playerDefending: false,
-        enemyDefending: false,
+        // 후공의 방어는 다음 라운드 선공의 공격에 대해 유효 (1라운드 지속)
+        playerDefending: secondAction.side === 'player' ? playerDefending : false,
+        enemyDefending: secondAction.side === 'enemy' ? enemyDefending : false,
         isPlayerFirst: newIsPlayerFirst,
         phase: newPhase,
         log: [...battleState.log, ...logEntries],
