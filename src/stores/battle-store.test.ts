@@ -304,5 +304,37 @@ describe('battle-store', () => {
       const debuffItem = actionQueue.find((q) => q.type === 'debuff')
       expect(debuffItem).toBeDefined()
     })
+
+    it('공격 큐 아이템 value는 number, 방어/버프/디버프 value는 undefined', () => {
+      // 공격 → value가 number
+      useBattleStore.getState().initBattle('용사', playerStats, playerSkills, 'easy')
+      useBattleStore.getState().executePlayerAction({ type: 'attack' })
+      const attackItems = useBattleStore.getState().actionQueue.filter((q) => q.type === 'damage')
+      for (const item of attackItems) {
+        expect(item.value).toBeTypeOf('number')
+      }
+
+      // 방어 → value가 undefined
+      useBattleStore.getState().reset()
+      useBattleStore.getState().initBattle('용사', playerStats, playerSkills, 'easy')
+      useBattleStore.getState().executePlayerAction({ type: 'defend' })
+      const defendItems = useBattleStore.getState().actionQueue.filter((q) => q.type === 'defend')
+      for (const item of defendItems) {
+        expect(item.value).toBeUndefined()
+      }
+
+      // 버프 → value가 undefined
+      const buffSkills: Skill[] = [
+        ...DEFAULT_SKILLS,
+        { id: 'power-up', name: '기합', type: 'buff', mpCost: 8, targetStat: 'atk', amount: 5, duration: 3, isDefault: false },
+      ]
+      useBattleStore.getState().reset()
+      useBattleStore.getState().initBattle('버퍼', playerStats, buffSkills, 'easy')
+      useBattleStore.getState().executePlayerAction({ type: 'skill', skillId: 'power-up' })
+      const buffItems = useBattleStore.getState().actionQueue.filter((q) => q.type === 'buff')
+      for (const item of buffItems) {
+        expect(item.value).toBeUndefined()
+      }
+    })
   })
 })

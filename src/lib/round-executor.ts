@@ -238,6 +238,17 @@ function determineQueueItemType(logEntry: TurnLogEntry): ActionQueueItem['type']
   }
 }
 
+/** skillType에 따라 큐 아이템에 표시할 value를 명시적으로 결정 */
+function resolveQueueValue(logEntry: TurnLogEntry): number | undefined {
+  switch (logEntry.skillType) {
+    case 'attack': return logEntry.damage
+    case 'heal': return logEntry.heal
+    case 'defend': return undefined
+    case 'buff': return undefined
+    case 'debuff': return undefined
+  }
+}
+
 function toQueueItem(
   logEntry: TurnLogEntry,
   side: 'player' | 'enemy',
@@ -249,7 +260,7 @@ function toQueueItem(
     actor: side,
     actorName: logEntry.actorName,
     description: logEntry.action,
-    value: logEntry.damage ?? logEntry.heal,
+    value: resolveQueueValue(logEntry),
     logEntry,
     playerSnapshot,
     enemySnapshot,
