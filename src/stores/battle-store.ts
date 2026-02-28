@@ -268,6 +268,13 @@ function applyTargetResult(target: Character, result: SkillExecutionResult): Cha
   }
 }
 
+function determineQueueItemType(logEntry: TurnLogEntry): ActionQueueItem['type'] {
+  if (logEntry.damage) return 'damage'
+  if (logEntry.heal) return 'heal'
+  if (logEntry.effect) return logEntry.effect.includes('+') ? 'buff' : 'debuff'
+  return 'defend'
+}
+
 function toQueueItem(
   logEntry: TurnLogEntry,
   side: 'player' | 'enemy',
@@ -275,7 +282,7 @@ function toQueueItem(
   enemySnapshot: Character,
 ): ActionQueueItem {
   return {
-    type: logEntry.damage ? 'damage' : logEntry.heal ? 'heal' : 'defend',
+    type: determineQueueItemType(logEntry),
     actor: side,
     actorName: logEntry.actorName,
     description: logEntry.action,
