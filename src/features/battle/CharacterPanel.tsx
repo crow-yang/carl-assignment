@@ -1,30 +1,44 @@
 import type { Character } from '../../types'
+import type { VisualEffect } from './battle-visual-helpers'
 
 interface CharacterPanelProps {
   character: Character
   side: 'player' | 'enemy'
+  activeEffect?: VisualEffect
 }
 
-export function CharacterPanel({ character, side }: CharacterPanelProps) {
+const EFFECT_CLASS: Record<string, string> = {
+  'hit-flash': 'animate-hit-flash',
+  'pulse-heal': 'animate-pulse-heal',
+  'shake': 'animate-shake',
+}
+
+export function CharacterPanel({ character, side, activeEffect }: CharacterPanelProps) {
   const hpPercent = Math.max(0, (character.currentHp / character.baseStats.hp) * 100)
   const mpPercent = Math.max(0, (character.currentMp / character.baseStats.mp) * 100)
 
   const testIdPrefix = side === 'player' ? 'player' : 'enemy'
   const buffs = character.activeEffects.filter((e) => e.type === 'buff')
   const debuffs = character.activeEffects.filter((e) => e.type === 'debuff')
+  const effectClass = activeEffect ? EFFECT_CLASS[activeEffect] ?? '' : ''
 
   return (
     <div
       data-testid={`${testIdPrefix}-panel`}
-      className="p-4 bg-gray-800 rounded-lg border border-gray-700"
+      className={`p-4 bg-gray-800 rounded-lg border border-gray-700 ${effectClass}`}
     >
-      {/* 이름 */}
-      <h3
-        data-testid={`${testIdPrefix}-name`}
-        className="text-base sm:text-lg font-bold mb-3"
-      >
-        {character.name}
-      </h3>
+      {/* 캐릭터 이모지 + 이름 */}
+      <div className="flex items-center gap-2 mb-3">
+        <span className="text-2xl" aria-hidden="true">
+          {side === 'player' ? '🧑‍⚔️' : '👹'}
+        </span>
+        <h3
+          data-testid={`${testIdPrefix}-name`}
+          className="text-base sm:text-lg font-bold"
+        >
+          {character.name}
+        </h3>
+      </div>
 
       {/* HP 바 */}
       <div className="mb-2">

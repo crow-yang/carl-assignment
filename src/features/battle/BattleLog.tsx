@@ -29,7 +29,7 @@ export function BattleLog({ log }: BattleLogProps) {
         log.map((entry, i) => (
           <div
             key={i}
-            className={`text-sm ${
+            className={`text-sm animate-slide-up ${
               entry.actor === 'player' ? 'text-blue-300' : 'text-red-300'
             }`}
           >

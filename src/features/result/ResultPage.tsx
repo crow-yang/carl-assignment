@@ -31,10 +31,10 @@ export function ResultPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="text-center space-y-6">
+      <div className="text-center space-y-6 animate-slide-up">
         <h1
           data-testid="result-title"
-          className={`text-2xl sm:text-4xl font-bold ${RESULT_COLOR[result]}`}
+          className={`text-2xl sm:text-4xl font-bold ${RESULT_COLOR[result]}${result === 'victory' ? ' drop-shadow-[0_0_16px_rgba(250,204,21,0.4)]' : ''}`}
         >
           {RESULT_TEXT[result]}
         </h1>

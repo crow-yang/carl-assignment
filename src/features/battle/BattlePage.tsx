@@ -4,7 +4,9 @@ import { useGameStore } from '../../stores/game-store'
 import { CharacterPanel } from './CharacterPanel'
 import { ActionPanel } from './ActionPanel'
 import { BattleLog } from './BattleLog'
+import { DamagePopup } from './DamagePopup'
 import { useQueueAnimation } from './useQueueAnimation'
+import { getActiveEffect } from './battle-visual-helpers'
 import type { BattleAction } from '../../types'
 
 export function BattlePage() {
@@ -13,7 +15,7 @@ export function BattlePage() {
   const processQueue = useBattleStore((s) => s.processQueue)
   const setPhase = useGameStore((s) => s.setPhase)
 
-  const { isAnimating, displayPlayer, displayEnemy, startConsuming, getVisibleLog } =
+  const { isAnimating, displayPlayer, displayEnemy, currentItem, startConsuming, getVisibleLog } =
     useQueueAnimation(processQueue)
 
   // 전투 종료 시 결과 화면 전환 (외부 시스템 동기화 — 타이머)
@@ -40,7 +42,7 @@ export function BattlePage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl space-y-4">
+      <div className="w-full max-w-2xl space-y-4 animate-slide-up">
         {/* 라운드 표시 */}
         <div className="text-center">
           <span
@@ -56,10 +58,24 @@ export function BattlePage() {
           )}
         </div>
 
-        {/* 캐릭터 패널 */}
+        {/* 캐릭터 패널 + 데미지 팝업 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <CharacterPanel character={shownPlayer} side="player" />
-          <CharacterPanel character={shownEnemy} side="enemy" />
+          <div className="relative">
+            <CharacterPanel
+              character={shownPlayer}
+              side="player"
+              activeEffect={getActiveEffect(currentItem, 'player')}
+            />
+            <DamagePopup item={currentItem} side="player" />
+          </div>
+          <div className="relative">
+            <CharacterPanel
+              character={shownEnemy}
+              side="enemy"
+              activeEffect={getActiveEffect(currentItem, 'enemy')}
+            />
+            <DamagePopup item={currentItem} side="enemy" />
+          </div>
         </div>
 
         {/* 액션 패널 */}
