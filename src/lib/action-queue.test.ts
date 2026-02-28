@@ -16,6 +16,7 @@ function makeItem(description: string): ActionQueueItem {
     round: 1,
     actor: 'player',
     actorName: '용사',
+    skillType: 'attack',
     action: description,
   }
   return {

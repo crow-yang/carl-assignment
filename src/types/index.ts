@@ -109,6 +109,7 @@ export interface TurnLogEntry {
   round: number
   actor: 'player' | 'enemy'
   actorName: string
+  skillType: SkillType  // 사용된 스킬의 타입 (큐 아이템 분류용)
   action: string   // 행동 설명 텍스트
   damage?: number
   heal?: number

@@ -55,6 +55,7 @@ export function executeSkill(
           round,
           actor: actorSide,
           actorName,
+          skillType: skill.type,
           action: skill.isDefault
             ? `${actorName}의 기본 공격! ${targetName}에게 ${damage} 데미지`
             : `${actorName}이(가) ${skill.name} 사용! ${targetName}에게 ${damage} 데미지`,
@@ -75,6 +76,7 @@ export function executeSkill(
           round,
           actor: actorSide,
           actorName,
+          skillType: skill.type,
           action: `${actorName}이(가) 방어 자세를 취했다!`,
         },
       }
@@ -96,6 +98,7 @@ export function executeSkill(
           round,
           actor: actorSide,
           actorName,
+          skillType: skill.type,
           action: `${actorName}이(가) ${skill.name} 사용! HP ${actualHeal} 회복`,
           heal: actualHeal,
         },
@@ -123,6 +126,7 @@ export function executeSkill(
           round,
           actor: actorSide,
           actorName,
+          skillType: skill.type,
           action: `${actorName}이(가) ${skill.name} 사용! ${skill.targetStat.toUpperCase()} +${skill.amount} (${skill.duration}턴)`,
           effect: `${skill.targetStat.toUpperCase()} +${skill.amount}`,
         },
@@ -150,6 +154,7 @@ export function executeSkill(
           round,
           actor: actorSide,
           actorName,
+          skillType: skill.type,
           action: `${actorName}이(가) ${skill.name} 사용! ${targetName}의 ${skill.targetStat.toUpperCase()} -${skill.amount} (${skill.duration}턴)`,
           effect: `${skill.targetStat.toUpperCase()} -${skill.amount}`,
         },

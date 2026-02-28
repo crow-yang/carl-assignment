@@ -271,10 +271,13 @@ function applyTargetResult(target: Character, result: SkillExecutionResult): Cha
 }
 
 function determineQueueItemType(logEntry: TurnLogEntry): ActionQueueItem['type'] {
-  if (logEntry.damage) return 'damage'
-  if (logEntry.heal) return 'heal'
-  if (logEntry.effect) return logEntry.effect.includes('+') ? 'buff' : 'debuff'
-  return 'defend'
+  switch (logEntry.skillType) {
+    case 'attack': return 'damage'
+    case 'heal': return 'heal'
+    case 'defend': return 'defend'
+    case 'buff': return 'buff'
+    case 'debuff': return 'debuff'
+  }
 }
 
 function toQueueItem(
