@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useReducer } from 'react'
 import { SKILL_TYPE_LABELS } from '../../constants'
 import { validateCustomSkill } from '../../lib/validation'
 import type { CustomSkillFormData } from '../../schemas'
@@ -19,6 +19,40 @@ interface SkillFormProps {
 }
 
 const CUSTOM_SKILL_TYPES: CustomSkillType[] = ['attack', 'heal', 'buff', 'debuff']
+
+// ─── 폼 상태 ────────────────────────────────────────────────
+
+interface SkillFormState {
+  name: string
+  type: CustomSkillType
+  mpCost: number
+  multiplier: number
+  healAmount: number
+  targetStat: BuffTargetStat
+  amount: number
+  duration: number
+}
+
+type SkillFormAction =
+  | { field: 'name'; value: string }
+  | { field: 'type'; value: CustomSkillType }
+  | { field: 'mpCost' | 'multiplier' | 'healAmount' | 'amount' | 'duration'; value: number }
+  | { field: 'targetStat'; value: BuffTargetStat }
+
+const initialFormState: SkillFormState = {
+  name: '',
+  type: 'attack',
+  mpCost: 5,
+  multiplier: 1.5,
+  healAmount: 20,
+  targetStat: 'atk',
+  amount: 5,
+  duration: 3,
+}
+
+function formReducer(state: SkillFormState, action: SkillFormAction): SkillFormState {
+  return { ...state, [action.field]: action.value }
+}
 
 /** NaN 안전 파싱: 빈 문자열이나 유효하지 않은 입력 시 fallback 반환 */
 function safeParseNumber(value: string, fallback: number): number {
@@ -51,23 +85,18 @@ function NumberInput({ label, width = 'w-24', onSafeChange, ...props }: {
   )
 }
 
+// ─── 메인 컴포넌트 ───────────────────────────────────────────
+
 export function SkillForm({ onSubmit, onCancel }: SkillFormProps) {
-  const [name, setName] = useState('')
-  const [type, setType] = useState<CustomSkillType>('attack')
-  const [mpCost, setMpCost] = useState(5)
-  const [multiplier, setMultiplier] = useState(1.5)
-  const [healAmount, setHealAmount] = useState(20)
-  const [targetStat, setTargetStat] = useState<BuffTargetStat>('atk')
-  const [amount, setAmount] = useState(5)
-  const [duration, setDuration] = useState(3)
+  const [form, dispatch] = useReducer(formReducer, initialFormState)
 
   const formData: CustomSkillFormData = (() => {
-    const base = { name, mpCost }
-    switch (type) {
-      case 'attack': return { ...base, type, multiplier }
-      case 'heal': return { ...base, type, healAmount }
+    const base = { name: form.name, mpCost: form.mpCost }
+    switch (form.type) {
+      case 'attack': return { ...base, type: form.type, multiplier: form.multiplier }
+      case 'heal': return { ...base, type: form.type, healAmount: form.healAmount }
       case 'buff':
-      case 'debuff': return { ...base, type, targetStat, amount, duration }
+      case 'debuff': return { ...base, type: form.type, targetStat: form.targetStat, amount: form.amount, duration: form.duration }
     }
   })()
   const validation = validateCustomSkill(formData)
@@ -91,8 +120,8 @@ export function SkillForm({ onSubmit, onCancel }: SkillFormProps) {
         <input
           data-testid="skill-name-input"
           type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          value={form.name}
+          onChange={(e) => dispatch({ field: 'name', value: e.target.value })}
           maxLength={8}
           placeholder="스킬 이름"
           className="w-full px-3 py-1.5 bg-gray-900 border border-gray-600 rounded text-white text-sm focus:outline-none focus:border-blue-500"
@@ -107,10 +136,10 @@ export function SkillForm({ onSubmit, onCancel }: SkillFormProps) {
             <button
               key={t}
               type="button"
-              aria-pressed={type === t}
-              onClick={() => setType(t)}
+              aria-pressed={form.type === t}
+              onClick={() => dispatch({ field: 'type', value: t })}
               className={`px-3 py-1 text-xs rounded transition-colors ${
-                type === t
+                form.type === t
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
               }`}
@@ -122,18 +151,18 @@ export function SkillForm({ onSubmit, onCancel }: SkillFormProps) {
       </div>
 
       {/* MP 소모 */}
-      <NumberInput label="MP 소모 (1~30)" min={1} max={30} value={mpCost} onSafeChange={setMpCost} />
+      <NumberInput label="MP 소모 (1~30)" min={1} max={30} value={form.mpCost} onSafeChange={(v) => dispatch({ field: 'mpCost', value: v })} />
 
       {/* 타입별 추가 필드 */}
-      {type === 'attack' && (
-        <NumberInput label="배율 (1.0~3.0)" min={1.0} max={3.0} step={0.1} value={multiplier} onSafeChange={setMultiplier} />
+      {form.type === 'attack' && (
+        <NumberInput label="배율 (1.0~3.0)" min={1.0} max={3.0} step={0.1} value={form.multiplier} onSafeChange={(v) => dispatch({ field: 'multiplier', value: v })} />
       )}
 
-      {type === 'heal' && (
-        <NumberInput label="회복량 (10~50)" min={10} max={50} value={healAmount} onSafeChange={setHealAmount} />
+      {form.type === 'heal' && (
+        <NumberInput label="회복량 (10~50)" min={10} max={50} value={form.healAmount} onSafeChange={(v) => dispatch({ field: 'healAmount', value: v })} />
       )}
 
-      {(type === 'buff' || type === 'debuff') && (
+      {(form.type === 'buff' || form.type === 'debuff') && (
         <div className="space-y-3">
           <div>
             <label className="block text-xs text-gray-400 mb-1">대상 스탯</label>
@@ -142,9 +171,9 @@ export function SkillForm({ onSubmit, onCancel }: SkillFormProps) {
                 <button
                   key={s}
                   type="button"
-                  onClick={() => setTargetStat(s)}
+                  onClick={() => dispatch({ field: 'targetStat', value: s })}
                   className={`px-3 py-1 text-xs rounded transition-colors ${
-                    targetStat === s
+                    form.targetStat === s
                       ? 'bg-blue-600 text-white'
                       : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
                   }`}
@@ -155,8 +184,8 @@ export function SkillForm({ onSubmit, onCancel }: SkillFormProps) {
             </div>
           </div>
           <div className="flex gap-4">
-            <NumberInput label="수치 (1~10)" min={1} max={10} value={amount} onSafeChange={setAmount} width="w-20" />
-            <NumberInput label="지속 턴 (1~5)" min={1} max={5} value={duration} onSafeChange={setDuration} width="w-20" />
+            <NumberInput label="수치 (1~10)" min={1} max={10} value={form.amount} onSafeChange={(v) => dispatch({ field: 'amount', value: v })} width="w-20" />
+            <NumberInput label="지속 턴 (1~5)" min={1} max={5} value={form.duration} onSafeChange={(v) => dispatch({ field: 'duration', value: v })} width="w-20" />
           </div>
         </div>
       )}
@@ -181,7 +210,7 @@ export function SkillForm({ onSubmit, onCancel }: SkillFormProps) {
       </div>
 
       {/* 검증 에러 메시지 */}
-      {!validation.valid && name.length > 0 && (
+      {!validation.valid && form.name.length > 0 && (
         <p className="text-sm text-red-400">{validation.errors[0]}</p>
       )}
     </form>
