@@ -238,3 +238,39 @@
 - TypeScript: 0 에러
 - 유닛 테스트: 134개 통과 (+1 MP 부족 테스트)
 - E2E 테스트: 10개 통과 (13.5s)
+
+---
+
+## 리뷰 사이클 #4: 최종 심층 리뷰
+
+### 발견 이슈 (4 HIGH + 6 MEDIUM + 8 LOW)
+
+| # | 우선순위 | 이슈 | 수정 |
+|---|---------|------|------|
+| 1 | HIGH | 버프/디버프 무한 중첩 → 스탯 무한 증가 | addEffect에서 같은 type+targetStat 교체 |
+| 8 | MEDIUM | react-hook-form/resolvers 미사용 | 의존성 제거 |
+| 6 | MEDIUM | SkillForm Enter 키 제출 불가 | `<form>` 래핑 |
+| 7 | MEDIUM | 스탯 입력 aria-label 없음 | aria-label 추가 |
+| 9 | MEDIUM | BattleLog aria-live 없음 | role="log" + aria-live="polite" |
+
+### 기술 상세
+
+**효과 중첩 방지 (effects.ts)**
+- 기존: `addEffect`가 무조건 배열에 추가 → 같은 ATK 버프 무한 중첩 가능
+- 수정: 같은 `type`+`targetStat` 조합의 기존 효과를 필터링 후 새 효과 추가 (교체)
+- 다른 type 간 (buff+debuff) 또는 다른 stat 간은 중첩 허용
+- 테스트 3개 추가로 교체/허용 동작 검증
+
+### 보류 이슈
+
+| # | 이슈 | 보류 이유 |
+|---|------|----------|
+| 2 | effectIdCounter 모듈 수준 | Vitest 단일 스레드, 실용적 문제 없음 |
+| 3 | 타이머 race condition | isAnimating 가드가 이중 실행 차단 |
+| 4 | 적 AI 동시 결정 | 의도적 설계 (사이클 #3에서 결정) |
+
+### 검증 결과
+- ESLint: 0 에러
+- TypeScript: 0 에러
+- 유닛 테스트: 137개 통과 (+3 효과 중첩 테스트)
+- E2E 테스트: 10개 통과 (15.3s)
