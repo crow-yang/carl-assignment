@@ -63,7 +63,14 @@ export const useSetupStore = create<SetupState & SetupActions>((set, get) => ({
   setStat: (stat, value) => {
     const range = STAT_RANGES[stat]
     const clamped = Math.max(range.min, Math.min(range.max, value))
-    set((s) => ({ stats: { ...s.stats, [stat]: clamped } }))
+    set((s) => {
+      // 다른 스탯의 합산을 구해서, 이 스탯에 배분 가능한 최대치를 계산
+      const otherTotal = (Object.keys(s.stats) as StatType[])
+        .filter((k) => k !== stat)
+        .reduce((sum, k) => sum + s.stats[k], 0)
+      const maxAllowed = Math.max(range.min, TOTAL_STAT_POINTS - otherTotal)
+      return { stats: { ...s.stats, [stat]: Math.min(clamped, maxAllowed) } }
+    })
   },
 
   addCustomSkill: (input) => {
