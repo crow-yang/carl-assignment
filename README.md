@@ -27,7 +27,7 @@ npx playwright test
 | 빌드 | Vite 7 | HMR 100ms 이하, ESM 네이티브 |
 | 상태 관리 | Zustand | 보일러플레이트 최소, 게임 상태에 적합 |
 | 스타일링 | Tailwind CSS v4 | 유틸리티 퍼스트, 런타임 0 |
-| 폼 검증 | React Hook Form + Zod v4 | 런타임 검증 + 타입 추론 |
+| 폼 검증 | Zod v4 | 런타임 스키마 검증 + 타입 추론 |
 | 유닛 테스트 | Vitest | Vite 네이티브, Jest 대비 10x 빠름 |
 | E2E | Playwright | 안정적, data-testid 네이티브 |
 
