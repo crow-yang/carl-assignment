@@ -59,6 +59,8 @@ export function Step1NameAndStats() {
           {STAT_KEYS.map((stat) => {
             const range = STAT_RANGES[stat]
             const statLabel = STAT_LABELS[stat]
+            const atMax = stats[stat] >= range.max
+            const atCap = remaining === 0 && stats[stat] < range.max
             return (
               <div key={stat} role="group" aria-label={`${statLabel} 배분`} className="flex items-center gap-4">
                 <label className="w-12 text-sm font-medium text-gray-300">
@@ -81,10 +83,14 @@ export function Step1NameAndStats() {
                   max={range.max}
                   value={stats[stat]}
                   onChange={(e) => setStat(stat, Number(e.target.value))}
-                  className="w-16 px-2 py-1 bg-gray-800 border border-gray-600 rounded text-center text-white focus:outline-none focus:border-blue-500"
+                  className={`w-16 px-2 py-1 bg-gray-800 border rounded text-center text-white focus:outline-none focus:border-blue-500 ${
+                    atMax ? 'border-yellow-500/60' : 'border-gray-600'
+                  }`}
                 />
-                <span className="w-16 text-xs text-gray-500 text-right">
-                  {range.min}~{range.max}
+                <span className={`w-16 text-xs text-right ${
+                  atMax ? 'text-yellow-500' : atCap ? 'text-gray-600' : 'text-gray-500'
+                }`}>
+                  {atMax ? 'MAX' : `${range.min}~${range.max}`}
                 </span>
               </div>
             )

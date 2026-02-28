@@ -82,8 +82,15 @@ export function BattlePage() {
           </div>
         </div>
 
-        {/* 액션 패널 */}
-        <div className="text-center">
+        {/* 턴 인디케이터 + 액션 패널 */}
+        <div className="text-center space-y-2">
+          {!result && (
+            <p className="text-sm text-gray-400">
+              {isAnimating
+                ? `${currentItem?.actorName ?? ''}의 행동 중...`
+                : '스킬을 선택하세요'}
+            </p>
+          )}
           <ActionPanel
             player={player}
             onAction={handleAction}
