@@ -128,3 +128,43 @@
 | **유닛 합계** | | **133** |
 | E2E | 3 파일 | **10** |
 | **전체 합계** | | **143** |
+
+---
+
+## Review Cycle #1: 코드 리뷰 + 리팩토링
+
+> 전체 코드베이스를 대상으로 1차 리뷰 수행. 11개 이슈 발견, 우선순위별 수정.
+
+### 발견된 이슈와 수정 내역
+
+| # | 우선순위 | 이슈 | 수정 내용 |
+|---|---------|------|----------|
+| 1 | HIGH | SPD 선공 판정에 DEF 버프/디버프 반영 | `getEffectiveStat(spd, 'def', [])` → `baseStats.spd` 직접 사용 |
+| 2 | HIGH | HP 바가 즉시 최종값으로 점프 | ActionQueueItem에 playerSnapshot/enemySnapshot 추가, UI가 큐 소비 시 스냅샷 기반 렌더링 |
+| 3 | MEDIUM | heal이 logEntry.heal 간접 참조 | SkillExecutionResult에 actorHpChange 필드 추가, applyActorResult에서 직접 사용 |
+| 4 | MEDIUM | setStat 총 포인트 초과 허용 | 다른 스탯 합산 계산 → maxAllowed 제한 추가 |
+| 5 | MEDIUM | toQueueItem buff/debuff → defend 분류 | logEntry.effect 필드로 buff(+)/debuff(-) 구분하는 determineQueueItemType 함수 추가 |
+| 6 | LOW | BattleAction optional skillId | 판별 유니온으로 변경 (skill 타입만 skillId 필수) |
+| 7 | LOW | effectIdCounter 게임 간 미리셋 | battle-store reset()에서 resetEffectIdCounter() 호출 |
+| 8 | LOW | inline import() 타입 | 정규 import로 교체 |
+| 9 | LOW | StepIndicator 접근성 부재 | nav/ol/aria-current 마크업 추가 |
+
+### 트러블슈팅
+
+#### SPD 선공 판정 버그
+- **증상**: DEF 버프가 있는 캐릭터의 선공 순서가 비정상적으로 변경됨
+- **원인**: `getEffectiveStat(playerStats.spd, 'def', effects)` — SPD를 DEF stat type으로 전달하여 DEF 관련 효과가 SPD에 반영됨
+- **근본 원인**: SPD는 버프/디버프 대상이 아닌데 `getEffectiveStat`을 불필요하게 경유
+- **해결**: raw `baseStats.spd`를 직접 사용하고, 미사용된 `getEffectiveStat` import 제거
+
+#### 스냅샷 기반 큐 애니메이션 설계
+- **문제**: executePlayerAction이 라운드 전체를 동기 처리하고 최종 상태로 store 업데이트 → 큐 소비 시 HP 바가 이미 최종값
+- **설계**: ActionQueueItem에 그 시점의 Character 스냅샷(playerSnapshot, enemySnapshot) 저장
+- **UI 흐름**: `displayPlayer/displayEnemy` state로 스냅샷 표시 → 큐 비면 null로 리셋 → battleState 최종값 복귀
+- **trade-off**: 스냅샷 데이터 중복이 있지만, 로직/UI 분리 원칙 유지와 올바른 연출이 더 중요
+
+### 검증 결과
+- ESLint: 0 에러
+- TypeScript: 0 에러
+- 유닛 테스트: 133개 통과
+- E2E 테스트: 10개 통과 (16.5s)
