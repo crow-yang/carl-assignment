@@ -4,8 +4,8 @@ import { useSetupStore } from '../../stores/setup-store'
 
 const RESULT_CONFIG = {
   victory: { text: '승리', emoji: '🏆', color: 'text-yellow-400', glow: 'drop-shadow-[0_0_24px_rgba(250,204,21,0.5)]' },
-  defeat:  { text: '패배', emoji: '💀', color: 'text-red-400', glow: '' },
-  draw:    { text: '무승부', emoji: '🤝', color: 'text-gray-400', glow: '' },
+  defeat:  { text: '패배', emoji: '💀', color: 'text-red-400', glow: 'drop-shadow-[0_0_24px_rgba(248,113,113,0.4)]' },
+  draw:    { text: '무승부', emoji: '🤝', color: 'text-gray-400', glow: 'drop-shadow-[0_0_16px_rgba(156,163,175,0.3)]' },
 } as const
 
 export function ResultPage() {
@@ -44,7 +44,7 @@ export function ResultPage() {
         <button
           data-testid="restart-button"
           onClick={handleRestart}
-          className="px-8 py-3 bg-blue-600 text-white rounded-lg font-medium text-lg hover:bg-blue-500 transition-colors"
+          className="px-8 py-3 bg-blue-600 text-white rounded-xl font-medium text-lg hover:bg-blue-500 shadow-lg shadow-blue-600/30 transition-colors"
         >
           다시 시작
         </button>

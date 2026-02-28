@@ -39,8 +39,8 @@ export function Step3Difficulty() {
               onClick={() => setDifficulty(d)}
               className={`p-4 rounded-lg border-2 text-left transition-colors ${
                 isSelected
-                  ? 'border-blue-500 bg-blue-500/10'
-                  : 'border-gray-700 bg-gray-800 hover:border-gray-500'
+                  ? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/20'
+                  : 'border-gray-700 bg-gray-800 hover:border-gray-500 hover:shadow-md'
               }`}
             >
               <div className="flex items-center justify-between mb-2">

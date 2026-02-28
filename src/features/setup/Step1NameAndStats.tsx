@@ -26,7 +26,7 @@ export function Step1NameAndStats() {
           onChange={(e) => setName(e.target.value)}
           placeholder="이름을 입력하세요 (1~10자)"
           maxLength={10}
-          className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+          className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-colors"
         />
         {name.length > 0 && !nameValidation.valid && (
           <p className="mt-1 text-sm text-red-400">{nameValidation.errors[0]}</p>
@@ -97,7 +97,7 @@ export function Step1NameAndStats() {
           data-testid="next-button"
           onClick={nextStep}
           disabled={!canProceed}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors"
+          className="px-6 py-2 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors"
         >
           다음
         </button>
