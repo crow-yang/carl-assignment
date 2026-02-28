@@ -89,6 +89,7 @@ export function SkillForm({ onSubmit, onCancel }: SkillFormProps) {
           {(Object.keys(SKILL_TYPE_LABELS) as CustomSkillType[]).map((t) => (
             <button
               key={t}
+              type="button"
               aria-pressed={type === t}
               onClick={() => setType(t)}
               className={`px-3 py-1 text-xs rounded transition-colors ${
@@ -154,6 +155,7 @@ export function SkillForm({ onSubmit, onCancel }: SkillFormProps) {
               {(['atk', 'def'] as BuffTargetStat[]).map((s) => (
                 <button
                   key={s}
+                  type="button"
                   onClick={() => setTargetStat(s)}
                   className={`px-3 py-1 text-xs rounded transition-colors ${
                     targetStat === s
