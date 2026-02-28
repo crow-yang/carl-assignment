@@ -26,6 +26,7 @@ export function shouldShowPopup(
     case 'defend':
     case 'buff':
     case 'debuff':
+    case 'effect-expire':
       return false
   }
 }
@@ -54,6 +55,7 @@ export function getActiveEffect(
     case 'defend':
     case 'buff':
     case 'debuff':
+    case 'effect-expire':
       return null
   }
 }
@@ -68,6 +70,7 @@ export function getPopupDisplay(item: ActionQueueItem): { text: string; colorCla
     case 'defend':
     case 'buff':
     case 'debuff':
+    case 'effect-expire':
       return { text: '', colorClass: '' }
   }
 }
