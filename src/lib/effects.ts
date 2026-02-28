@@ -46,7 +46,9 @@ export function tickEffects(effects: ActiveEffect[]): ActiveEffect[] {
 }
 
 /**
- * 새 효과 추가. 원본 배열을 변경하지 않음.
+ * 새 효과 추가. 같은 type+targetStat 효과가 이미 있으면 교체(갱신).
+ * 동일 스탯에 대한 무한 중첩을 방지한다.
+ * 원본 배열을 변경하지 않음.
  */
 export function addEffect(
   effects: ActiveEffect[],
@@ -64,5 +66,9 @@ export function addEffect(
     remainingTurns: duration,
     sourceName,
   }
-  return [...effects, newEffect]
+  // 같은 type+targetStat 효과를 교체 (중첩 방지)
+  const filtered = effects.filter(
+    (e) => !(e.type === type && e.targetStat === targetStat),
+  )
+  return [...filtered, newEffect]
 }

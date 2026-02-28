@@ -129,4 +129,30 @@ describe('addEffect', () => {
     const r2 = addEffect([], 'buff', 'atk', 5, 3, 'b')
     expect(r1[0].id).not.toBe(r2[0].id)
   })
+
+  it('같은 type+targetStat 효과는 교체 (중첩 방지)', () => {
+    const existing: ActiveEffect[] = [
+      { id: 'old', type: 'buff', targetStat: 'atk', amount: 3, remainingTurns: 1, sourceName: '기존' },
+    ]
+    const result = addEffect(existing, 'buff', 'atk', 5, 3, '새로운')
+    expect(result).toHaveLength(1)
+    expect(result[0].amount).toBe(5)
+    expect(result[0].sourceName).toBe('새로운')
+  })
+
+  it('다른 type이면 중첩 허용 (buff atk + debuff atk)', () => {
+    const existing: ActiveEffect[] = [
+      { id: 'old', type: 'buff', targetStat: 'atk', amount: 3, remainingTurns: 1, sourceName: '버프' },
+    ]
+    const result = addEffect(existing, 'debuff', 'atk', 2, 2, '디버프')
+    expect(result).toHaveLength(2)
+  })
+
+  it('다른 targetStat이면 중첩 허용 (buff atk + buff def)', () => {
+    const existing: ActiveEffect[] = [
+      { id: 'old', type: 'buff', targetStat: 'atk', amount: 3, remainingTurns: 1, sourceName: '공버프' },
+    ]
+    const result = addEffect(existing, 'buff', 'def', 5, 3, '방버프')
+    expect(result).toHaveLength(2)
+  })
 })
