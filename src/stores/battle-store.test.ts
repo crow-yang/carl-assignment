@@ -189,5 +189,120 @@ describe('battle-store', () => {
       expect(result).not.toBeNull()
       expect(result!.result).toBe('victory')
     })
+
+    it('플레이어 HP가 0 이하면 defeat', () => {
+      // 낮은 HP + 낮은 DEF vs hard 적
+      const weakStats: Stats = { hp: 20, mp: 40, atk: 5, def: 5, spd: 5 }
+      useBattleStore.getState().initBattle('약자', weakStats, DEFAULT_SKILLS, 'hard')
+
+      for (let i = 0; i < 20; i++) {
+        const bs = useBattleStore.getState().battleState
+        if (bs?.result) break
+        useBattleStore.getState().executePlayerAction({ type: 'attack' })
+      }
+
+      const result = useBattleStore.getState().getResult()
+      expect(result).not.toBeNull()
+      expect(result!.result).toBe('defeat')
+    })
+
+    it('후공의 공격으로 사망 → 후공 후 사망 분기', () => {
+      // 플레이어 선공, 적 후공인 상태에서 적의 후공 공격으로 플레이어 사망
+      // 적 HP를 높게, 플레이어 HP를 낮게 설정 → 선공(플레이어)에서는 적이 안 죽고, 후공(적)에서 플레이어가 죽음
+      const lowHpStats: Stats = { hp: 30, mp: 40, atk: 5, def: 5, spd: 15 }
+      useBattleStore.getState().initBattle('유리', lowHpStats, DEFAULT_SKILLS, 'hard')
+      // 플레이어 SPD 15 > hard 적 SPD 14 → 플레이어 선공
+      const bs = useBattleStore.getState().battleState!
+      expect(bs.isPlayerFirst).toBe(true)
+
+      // 여러 라운드 실행 — 선공(플레이어)은 ATK 5로 거의 피해 못 주고, 후공(적) ATK 20이 플레이어를 사망시킴
+      for (let i = 0; i < 20; i++) {
+        const current = useBattleStore.getState().battleState
+        if (current?.result) break
+        useBattleStore.getState().executePlayerAction({ type: 'attack' })
+      }
+
+      const result = useBattleStore.getState().getResult()
+      expect(result).not.toBeNull()
+      // 플레이어 ATK 5 vs 적 DEF 16 → 최소 데미지 1, 적 HP 140이라 안 죽음
+      // 적 ATK 20 vs 플레이어 DEF 5 → ~17.5 데미지, 플레이어 HP 30이라 2라운드면 사망
+      expect(result!.result).toBe('defeat')
+    })
+
+    it('20라운드 초과 시 무승부', () => {
+      // 양쪽 모두 높은 HP + 높은 DEF + 낮은 ATK → 서로 못 죽임
+      const tankStats: Stats = { hp: 100, mp: 20, atk: 5, def: 30, spd: 15 }
+      useBattleStore.getState().initBattle('탱커', tankStats, DEFAULT_SKILLS, 'easy')
+
+      for (let i = 0; i < 25; i++) {
+        const bs = useBattleStore.getState().battleState
+        if (bs?.result) break
+        useBattleStore.getState().executePlayerAction({ type: 'attack' })
+      }
+
+      const result = useBattleStore.getState().getResult()
+      expect(result).not.toBeNull()
+      expect(result!.result).toBe('draw')
+    })
+  })
+
+  // ─── 적 선공 시나리오 (isPlayerFirst === false) ───────
+  describe('적 선공', () => {
+    it('적 SPD > 플레이어 SPD → 적이 선공', () => {
+      // 플레이어 SPD 5 vs easy 적 SPD 7 → 적 선공
+      const slowStats: Stats = { hp: 60, mp: 40, atk: 20, def: 15, spd: 5 }
+      useBattleStore.getState().initBattle('느림이', slowStats, playerSkills, 'easy')
+      const bs = useBattleStore.getState().battleState!
+      expect(bs.isPlayerFirst).toBe(false)
+
+      useBattleStore.getState().executePlayerAction({ type: 'attack' })
+      const state = useBattleStore.getState()
+      expect(state.actionQueue.length).toBe(2)
+      // 첫 번째 큐 아이템은 적의 행동
+      expect(state.actionQueue[0].actor).toBe('enemy')
+    })
+  })
+
+  // ─── 힐/버프 스킬 큐 타입 ────────────────────────────
+  describe('힐/버프/디버프 큐 타입', () => {
+    it('힐 스킬 사용 → 큐 아이템 type이 heal', () => {
+      const healSkills: Skill[] = [
+        ...DEFAULT_SKILLS,
+        { id: 'heal-light', name: '치유', type: 'heal', mpCost: 10, healAmount: 20, isDefault: false },
+      ]
+      useBattleStore.getState().initBattle('힐러', playerStats, healSkills, 'easy')
+      useBattleStore.getState().executePlayerAction({ type: 'skill', skillId: 'heal-light' })
+
+      const { actionQueue, battleState } = useBattleStore.getState()
+      const healItem = actionQueue.find((q) => q.type === 'heal')
+      expect(healItem).toBeDefined()
+      expect(battleState!.log.some((e) => e.skillType === 'heal')).toBe(true)
+    })
+
+    it('버프 스킬 사용 → 큐 아이템 type이 buff', () => {
+      const buffSkills: Skill[] = [
+        ...DEFAULT_SKILLS,
+        { id: 'power-up', name: '기합', type: 'buff', mpCost: 8, targetStat: 'atk', amount: 5, duration: 3, isDefault: false },
+      ]
+      useBattleStore.getState().initBattle('버퍼', playerStats, buffSkills, 'easy')
+      useBattleStore.getState().executePlayerAction({ type: 'skill', skillId: 'power-up' })
+
+      const { actionQueue } = useBattleStore.getState()
+      const buffItem = actionQueue.find((q) => q.type === 'buff')
+      expect(buffItem).toBeDefined()
+    })
+
+    it('디버프 스킬 사용 → 큐 아이템 type이 debuff', () => {
+      const debuffSkills: Skill[] = [
+        ...DEFAULT_SKILLS,
+        { id: 'weaken', name: '약화', type: 'debuff', mpCost: 8, targetStat: 'def', amount: 3, duration: 2, isDefault: false },
+      ]
+      useBattleStore.getState().initBattle('디버퍼', playerStats, debuffSkills, 'easy')
+      useBattleStore.getState().executePlayerAction({ type: 'skill', skillId: 'weaken' })
+
+      const { actionQueue } = useBattleStore.getState()
+      const debuffItem = actionQueue.find((q) => q.type === 'debuff')
+      expect(debuffItem).toBeDefined()
+    })
   })
 })

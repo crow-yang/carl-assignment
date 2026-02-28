@@ -76,6 +76,35 @@ describe('decideEnemyAction - normal', () => {
     const action = decideEnemyAction(enemy, makePlayer(), 'normal', () => 0.5)
     expect(action.type).toBe('defend')
   })
+
+  it('HP <= 50%일 때 rng 0.7 → 강타', () => {
+    const enemy = makeEnemy('normal', { currentHp: 40 })
+    const action = decideEnemyAction(enemy, makePlayer(), 'normal', () => 0.7)
+    expectSkillId(action, 'enemy-smash-normal')
+  })
+
+  it('HP <= 50%일 때 rng 0.9 → 기본 공격', () => {
+    const enemy = makeEnemy('normal', { currentHp: 40 })
+    const action = decideEnemyAction(enemy, makePlayer(), 'normal', () => 0.9)
+    expect(action.type).toBe('attack')
+  })
+
+  it('HP > 50%이고 hpRatio <= 0.7 → 회복', () => {
+    // 71/110 ≈ 0.645 → HP > 50% && hpRatio <= 0.7
+    const enemy = makeEnemy('normal', { currentHp: 71 })
+    const action = decideEnemyAction(enemy, makePlayer(), 'normal', () => 0.35)
+    expectSkillId(action, 'enemy-heal-normal')
+  })
+
+  it('HP > 50%일 때 rng 0.5 → 기본 공격', () => {
+    const action = decideEnemyAction(makeEnemy('normal'), makePlayer(), 'normal', () => 0.5)
+    expect(action.type).toBe('attack')
+  })
+
+  it('HP > 50%일 때 rng 0.95 → 방어', () => {
+    const action = decideEnemyAction(makeEnemy('normal'), makePlayer(), 'normal', () => 0.95)
+    expect(action.type).toBe('defend')
+  })
 })
 
 describe('decideEnemyAction - hard', () => {
@@ -117,5 +146,25 @@ describe('decideEnemyAction - hard', () => {
     })
     const action = decideEnemyAction(enemy, player, 'hard', () => 0.5)
     expectSkillId(action, 'enemy-smash-hard')
+  })
+
+  it('일반 상황에서 hpRatio <= 0.6 → 회복', () => {
+    // HP 80/140 ≈ 0.57, 디버프 있음 + 상대 HP > 30%
+    const enemy = makeEnemy('hard', { currentHp: 80 })
+    const player = makePlayer({
+      activeEffects: [{ id: '1', type: 'debuff', targetStat: 'def', amount: 5, remainingTurns: 2, sourceName: '약화' }],
+    })
+    const action = decideEnemyAction(enemy, player, 'hard', () => 0.6)
+    expectSkillId(action, 'enemy-heal-hard')
+  })
+
+  it('일반 상황에서 기본 공격 fallback', () => {
+    // 디버프 있음 + 상대 HP > 30% + rng 0.8 → 강타/회복 조건 불충족 → 기본공격
+    const enemy = makeEnemy('hard')
+    const player = makePlayer({
+      activeEffects: [{ id: '1', type: 'debuff', targetStat: 'def', amount: 5, remainingTurns: 2, sourceName: '약화' }],
+    })
+    const action = decideEnemyAction(enemy, player, 'hard', () => 0.8)
+    expect(action.type).toBe('attack')
   })
 })

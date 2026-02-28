@@ -103,6 +103,40 @@ describe('setup-store', () => {
     expect(skills[0].type).toBe('buff')
   })
 
+  it('addCustomSkill: 디버프 스킬 추가', () => {
+    useSetupStore.getState().addCustomSkill({
+      name: '약화', type: 'debuff', mpCost: 8, targetStat: 'def', amount: 3, duration: 2,
+    })
+    const skills = useSetupStore.getState().customSkills
+    expect(skills).toHaveLength(1)
+    expect(skills[0].type).toBe('debuff')
+  })
+
+  it('addCustomSkill: 옵셔널 필드 생략 시 기본값 적용', () => {
+    // attack — multiplier 생략
+    useSetupStore.getState().addCustomSkill({ name: 'a', type: 'attack', mpCost: 5 })
+    const atk = useSetupStore.getState().customSkills[0]
+    if (atk.type === 'attack') expect(atk.multiplier).toBe(1.0)
+
+    useSetupStore.getState().reset()
+
+    // heal — healAmount 생략
+    useSetupStore.getState().addCustomSkill({ name: 'b', type: 'heal', mpCost: 5 })
+    const heal = useSetupStore.getState().customSkills[0]
+    if (heal.type === 'heal') expect(heal.healAmount).toBe(10)
+
+    useSetupStore.getState().reset()
+
+    // buff — targetStat, amount, duration 생략
+    useSetupStore.getState().addCustomSkill({ name: 'c', type: 'buff', mpCost: 5 })
+    const buff = useSetupStore.getState().customSkills[0]
+    if (buff.type === 'buff') {
+      expect(buff.targetStat).toBe('atk')
+      expect(buff.amount).toBe(1)
+      expect(buff.duration).toBe(1)
+    }
+  })
+
   it('addCustomSkill: 최대 개수 초과 시 무시', () => {
     for (let i = 0; i < MAX_CUSTOM_SKILLS + 2; i++) {
       useSetupStore.getState().addCustomSkill({
