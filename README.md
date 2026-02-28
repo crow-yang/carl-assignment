@@ -66,7 +66,7 @@ src/
 ### 1. 순수 함수 게임 로직 분리
 
 모든 게임 로직을 `lib/`에 순수 함수로 구현했습니다. UI 프레임워크와 완전히 독립적이어서:
-- 테스트가 즉각적 (192개 유닛 테스트, < 1초)
+- 테스트가 즉각적 (195개 유닛 테스트, < 1초)
 - 로직 변경 시 UI 변경 불필요 (관심사 분리)
 - 모든 분기 조건을 결정적으로 검증 가능
 
@@ -108,6 +108,7 @@ src/
 - HP/MP 바: `role="progressbar"` + `aria-valuenow/min/max` + `aria-label`
 - 전투 로그: `role="log"` + `aria-live="polite"` (스크린 리더가 새 로그를 자동 읽음)
 - 스킬 타입 선택: `aria-pressed` 토글 버튼 패턴
+- 페이즈 전환 포커스 관리: setup→battle→result 전환 시 컨테이너에 프로그래매틱 포커스 이동
 - HTML: `lang="ko"`, 페이지 title "턴제 배틀 게임"
 
 ### 8. 성능 최적화
@@ -115,13 +116,13 @@ src/
 - **Zustand 셀렉터**: 프리미티브 값만 반환하여 불필요한 리렌더 방지 (`selectRemainingPoints` 패턴)
 - **순수 함수 분리**: `round-executor.ts`로 라운드 로직을 추출하여 스토어(95줄)가 상태 업데이트만 담당
 - **CSS 애니메이션**: JS 런타임 0. Tailwind `@theme` 블록에 키프레임 정의 → GPU 가속
-- **빌드 사이즈**: 292KB (gzip 88KB) — React+Zustand+Zod 포함
+- **빌드 사이즈**: 296KB (gzip 90KB) — React+Zustand+Zod 포함
 
 ## 테스트
 
 | 종류 | 파일 수 | 테스트 수 | 내용 |
 |------|--------|----------|------|
-| 유닛 | 13 | 192 | 게임 로직 + 스토어 + 비주얼 헬퍼 + 큐 애니메이션 |
+| 유닛 | 14 | 195 | 게임 로직 + 스토어 + 비주얼 헬퍼 + 큐 애니메이션 + ErrorBoundary |
 | E2E | 3 | 10 | 세팅/전투/풀플로우 |
 
 커버리지: Lines **100%**, Functions **100%**, Branches **100%**
@@ -151,3 +152,4 @@ npm run lint
 
 - [001-tech-stack-and-architecture.md](dev-log/001-tech-stack-and-architecture.md) — 기술 스택 선정 이유 + 아키텍처 결정
 - [002-implementation.md](dev-log/002-implementation.md) — 구현 과정 + 트러블슈팅
+- [003-review-improvements.md](dev-log/003-review-improvements.md) — 코드 리뷰 감점사항 보완
