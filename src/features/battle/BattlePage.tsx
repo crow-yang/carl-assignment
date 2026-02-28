@@ -7,6 +7,7 @@ import { BattleLog } from './BattleLog'
 import { DamagePopup } from './DamagePopup'
 import { useQueueAnimation } from './useQueueAnimation'
 import { getActiveEffect } from './battle-visual-helpers'
+import { RESULT_TRANSITION_DELAY_MS } from '../../constants'
 import type { BattleAction } from '../../types'
 
 export function BattlePage() {
@@ -21,7 +22,7 @@ export function BattlePage() {
   // 전투 종료 시 결과 화면 전환 (외부 시스템 동기화 — 타이머)
   useEffect(() => {
     if (battleState?.result && !isAnimating) {
-      const timer = setTimeout(() => setPhase('result'), 1500)
+      const timer = setTimeout(() => setPhase('result'), RESULT_TRANSITION_DELAY_MS)
       return () => clearTimeout(timer)
     }
   }, [battleState?.result, isAnimating, setPhase])

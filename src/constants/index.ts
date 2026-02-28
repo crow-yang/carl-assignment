@@ -69,6 +69,7 @@ export const MAX_ROUNDS = 20
 export const DEFEND_DAMAGE_REDUCTION = 0.5
 export const DEF_MULTIPLIER = 0.5
 export const MIN_DAMAGE = 1
+export const RESULT_TRANSITION_DELAY_MS = 1500
 
 // ─── 난이도별 적 데이터 ────────────────────────────────────
 export const ENEMY_STATS: Record<Difficulty, Stats> = {
