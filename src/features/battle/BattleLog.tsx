@@ -19,6 +19,8 @@ export function BattleLog({ log }: BattleLogProps) {
     <div
       data-testid="battle-log"
       ref={containerRef}
+      role="log"
+      aria-live="polite"
       className="h-48 overflow-y-auto p-3 bg-gray-800 rounded-lg border border-gray-700 space-y-1"
     >
       {log.length === 0 ? (

@@ -70,6 +70,7 @@ export function Step1NameAndStats() {
                 </label>
                 <input
                   type="range"
+                  aria-label={`${STAT_LABELS[stat]} 슬라이더`}
                   min={range.min}
                   max={range.max}
                   value={stats[stat]}
@@ -79,6 +80,7 @@ export function Step1NameAndStats() {
                 <input
                   data-testid={`stat-${stat}`}
                   type="number"
+                  aria-label={`${STAT_LABELS[stat]} 수치 입력`}
                   min={range.min}
                   max={range.max}
                   value={stats[stat]}

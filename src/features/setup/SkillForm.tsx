@@ -62,7 +62,10 @@ export function SkillForm({ onSubmit, onCancel }: SkillFormProps) {
   }
 
   return (
-    <div className="p-4 bg-gray-800 rounded-lg border border-gray-600 space-y-4">
+    <form
+      onSubmit={(e) => { e.preventDefault(); handleSubmit() }}
+      className="p-4 bg-gray-800 rounded-lg border border-gray-600 space-y-4"
+    >
       <h4 className="text-sm font-semibold text-gray-300">커스텀 스킬 생성</h4>
 
       {/* 스킬 이름 */}
@@ -194,19 +197,20 @@ export function SkillForm({ onSubmit, onCancel }: SkillFormProps) {
       <div className="flex gap-2 pt-2">
         <button
           data-testid="submit-skill-button"
-          onClick={handleSubmit}
+          type="submit"
           disabled={!canSubmit}
           className="px-4 py-1.5 bg-green-600 text-white text-sm rounded font-medium hover:bg-green-500 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors"
         >
           생성
         </button>
         <button
+          type="button"
           onClick={onCancel}
           className="px-4 py-1.5 bg-gray-700 text-gray-300 text-sm rounded hover:bg-gray-600 transition-colors"
         >
           취소
         </button>
       </div>
-    </div>
+    </form>
   )
 }
