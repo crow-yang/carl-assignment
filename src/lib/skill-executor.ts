@@ -105,58 +105,35 @@ export function executeSkill(
       }
     }
 
-    case 'buff': {
-      const newEffects = addEffect(
-        actor.activeEffects,
-        'buff',
-        skill.targetStat,
-        skill.amount,
-        skill.duration,
-        skill.name,
-      )
-
-      return {
-        targetHpChange: 0,
-        actorHpChange: 0,
-        actorMpChange: mpChange(skill.mpCost),
-        newActorEffects: newEffects,
-        newTargetEffects: target.activeEffects,
-        isDefending: false,
-        logEntry: {
-          round,
-          actor: actorSide,
-          actorName,
-          skillType: skill.type,
-          action: `${actorName}이(가) ${skill.name} 사용! ${skill.targetStat.toUpperCase()} +${skill.amount} (${skill.duration}턴)`,
-          effect: `${skill.targetStat.toUpperCase()} +${skill.amount}`,
-        },
-      }
-    }
-
+    case 'buff':
     case 'debuff': {
+      const isBuff = skill.type === 'buff'
+      const effectTarget = isBuff ? actor : target
       const newEffects = addEffect(
-        target.activeEffects,
-        'debuff',
+        effectTarget.activeEffects,
+        skill.type,
         skill.targetStat,
         skill.amount,
         skill.duration,
         skill.name,
       )
+      const sign = isBuff ? '+' : '-'
+      const actionTarget = isBuff ? '' : `${targetName}의 `
 
       return {
         targetHpChange: 0,
         actorHpChange: 0,
         actorMpChange: mpChange(skill.mpCost),
-        newActorEffects: actor.activeEffects,
-        newTargetEffects: newEffects,
+        newActorEffects: isBuff ? newEffects : actor.activeEffects,
+        newTargetEffects: isBuff ? target.activeEffects : newEffects,
         isDefending: false,
         logEntry: {
           round,
           actor: actorSide,
           actorName,
           skillType: skill.type,
-          action: `${actorName}이(가) ${skill.name} 사용! ${targetName}의 ${skill.targetStat.toUpperCase()} -${skill.amount} (${skill.duration}턴)`,
-          effect: `${skill.targetStat.toUpperCase()} -${skill.amount}`,
+          action: `${actorName}이(가) ${skill.name} 사용! ${actionTarget}${skill.targetStat.toUpperCase()} ${sign}${skill.amount} (${skill.duration}턴)`,
+          effect: `${skill.targetStat.toUpperCase()} ${sign}${skill.amount}`,
         },
       }
     }
