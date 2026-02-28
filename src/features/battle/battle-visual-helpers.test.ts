@@ -149,6 +149,11 @@ describe('getPopupDisplay', () => {
     expect(getPopupDisplay(item)).toEqual({ text: '-0', colorClass: 'text-red-400' })
   })
 
+  it('heal value undefined → +0 표시', () => {
+    const item = makeItem({ type: 'heal', value: undefined })
+    expect(getPopupDisplay(item)).toEqual({ text: '+0', colorClass: 'text-green-400' })
+  })
+
   it('defend → 빈 텍스트', () => {
     const item = makeItem({ type: 'defend' })
     expect(getPopupDisplay(item)).toEqual({ text: '', colorClass: '' })
@@ -161,6 +166,11 @@ describe('getPopupDisplay', () => {
 
   it('debuff → 빈 텍스트', () => {
     const item = makeItem({ type: 'debuff' })
+    expect(getPopupDisplay(item)).toEqual({ text: '', colorClass: '' })
+  })
+
+  it('effect-expire → 빈 텍스트', () => {
+    const item = makeItem({ type: 'effect-expire' })
     expect(getPopupDisplay(item)).toEqual({ text: '', colorClass: '' })
   })
 })

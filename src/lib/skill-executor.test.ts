@@ -45,6 +45,17 @@ describe('executeSkill - attack', () => {
     expect(result.targetHpChange).toBe(-7)
   })
 
+  it('isDefault가 false인 스킬 → 로그에 스킬 이름 포함', () => {
+    const namedSkill: AttackSkill = {
+      id: 'fire', name: '화염참', type: 'attack', mpCost: 10, multiplier: 1.5, isDefault: false,
+    }
+    const actor = makeCharacter({ name: '용사' })
+    const target = makeCharacter({ name: '슬라임' })
+    const result = executeSkill(actor, target, namedSkill, 1, 'player', false)
+    expect(result.logEntry.action).toContain('화염참 사용')
+    expect(result.logEntry.action).not.toContain('기본 공격')
+  })
+
   it('스킬 배율 적용', () => {
     const strongSkill: AttackSkill = {
       id: 's', name: '강타', type: 'attack', mpCost: 10, multiplier: 1.5, isDefault: false,

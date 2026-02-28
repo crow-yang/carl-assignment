@@ -76,6 +76,14 @@ describe('battle-store', () => {
       expect(state.battleState!.player.currentMp).toBeLessThan(playerStats.mp)
     })
 
+    it('battleState가 null이면 아무 동작 안 함', () => {
+      // beforeEach에서 initBattle이 호출되므로 reset으로 초기화
+      useBattleStore.getState().reset()
+      useBattleStore.getState().executePlayerAction({ type: 'attack' })
+      expect(useBattleStore.getState().battleState).toBeNull()
+      expect(useBattleStore.getState().actionQueue).toEqual([])
+    })
+
     it('존재하지 않는 스킬 → 아무 동작 안 함', () => {
       const before = useBattleStore.getState().battleState
       useBattleStore.getState().executePlayerAction({ type: 'skill', skillId: 'nonexistent' })
