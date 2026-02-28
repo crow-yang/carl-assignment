@@ -25,7 +25,9 @@ export function CharacterPanel({ character, side, activeEffect }: CharacterPanel
   return (
     <div
       data-testid={`${testIdPrefix}-panel`}
-      className={`p-4 bg-gray-800 rounded-lg border border-gray-700 ${effectClass}`}
+      className={`p-4 bg-gray-800 rounded-lg border-2 ${
+        side === 'player' ? 'border-blue-800' : 'border-red-800'
+      } ${effectClass}`}
     >
       {/* 캐릭터 아바타 + 이름 */}
       <div className="flex items-center gap-2 mb-3">

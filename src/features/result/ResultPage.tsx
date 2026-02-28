@@ -2,16 +2,10 @@ import { useBattleStore } from '../../stores/battle-store'
 import { useGameStore } from '../../stores/game-store'
 import { useSetupStore } from '../../stores/setup-store'
 
-const RESULT_TEXT = {
-  victory: '승리',
-  defeat: '패배',
-  draw: '무승부',
-} as const
-
-const RESULT_COLOR = {
-  victory: 'text-yellow-400',
-  defeat: 'text-red-400',
-  draw: 'text-gray-400',
+const RESULT_CONFIG = {
+  victory: { text: '승리', emoji: '🏆', color: 'text-yellow-400', glow: 'drop-shadow-[0_0_24px_rgba(250,204,21,0.5)]' },
+  defeat:  { text: '패배', emoji: '💀', color: 'text-red-400', glow: '' },
+  draw:    { text: '무승부', emoji: '🤝', color: 'text-gray-400', glow: '' },
 } as const
 
 export function ResultPage() {
@@ -32,16 +26,17 @@ export function ResultPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="text-center space-y-6 animate-slide-up">
+        <div className="text-6xl mb-2" aria-hidden="true">{RESULT_CONFIG[result].emoji}</div>
         <h1
           data-testid="result-title"
-          className={`text-2xl sm:text-4xl font-bold ${RESULT_COLOR[result]}${result === 'victory' ? ' drop-shadow-[0_0_16px_rgba(250,204,21,0.4)]' : ''}`}
+          className={`text-3xl sm:text-5xl font-black ${RESULT_CONFIG[result].color} ${RESULT_CONFIG[result].glow}`}
         >
-          {RESULT_TEXT[result]}
+          {RESULT_CONFIG[result].text}
         </h1>
 
         <p
           data-testid="result-turns"
-          className="text-lg text-gray-300"
+          className="text-lg text-gray-400"
         >
           총 {totalRounds}턴
         </p>

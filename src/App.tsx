@@ -9,7 +9,7 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-gray-900 text-white">
+      <div className="min-h-screen bg-linear-to-b from-gray-900 via-gray-900 to-gray-950 text-white">
         <div key={phase} className="animate-fade-in">
           {phase === 'setup' && <SetupPage />}
           {phase === 'battle' && <BattlePage />}

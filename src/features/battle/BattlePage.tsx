@@ -47,7 +47,7 @@ export function BattlePage() {
         <div className="text-center">
           <span
             data-testid="round-display"
-            className="text-lg font-bold text-yellow-400"
+            className="inline-block px-4 py-1 bg-yellow-900/40 border border-yellow-700/50 rounded-full text-lg font-bold text-yellow-400"
           >
             Round {round}
           </span>
@@ -58,8 +58,8 @@ export function BattlePage() {
           )}
         </div>
 
-        {/* 캐릭터 패널 + 데미지 팝업 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* 캐릭터 패널 + VS + 데미지 팝업 */}
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] gap-4 items-center">
           <div className="relative">
             <CharacterPanel
               character={shownPlayer}
@@ -67,6 +67,9 @@ export function BattlePage() {
               activeEffect={getActiveEffect(currentItem, 'player')}
             />
             <DamagePopup item={currentItem} side="player" />
+          </div>
+          <div className="hidden sm:flex items-center justify-center">
+            <span className="text-2xl font-black text-gray-600 select-none">VS</span>
           </div>
           <div className="relative">
             <CharacterPanel
