@@ -155,7 +155,6 @@ describe('battle-store', () => {
       expect(s.battleState).toBeNull()
       expect(s.difficulty).toBeNull()
       expect(s.actionQueue).toEqual([])
-      expect(s.isProcessingQueue).toBe(false)
     })
   })
 

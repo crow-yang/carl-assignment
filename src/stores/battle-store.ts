@@ -14,7 +14,6 @@ interface BattleStoreState {
   battleState: BattleState | null
   difficulty: Difficulty | null
   actionQueue: ActionQueueItem[]
-  isProcessingQueue: boolean
 }
 
 interface BattleStoreActions {
@@ -29,7 +28,6 @@ const initialState: BattleStoreState = {
   battleState: null,
   difficulty: null,
   actionQueue: [],
-  isProcessingQueue: false,
 }
 
 export const useBattleStore = create<BattleStoreState & BattleStoreActions>((set, get) => ({
@@ -69,14 +67,13 @@ export const useBattleStore = create<BattleStoreState & BattleStoreActions>((set
       result: null,
     }
 
-    set({ battleState, difficulty, actionQueue: [], isProcessingQueue: false })
+    set({ battleState, difficulty, actionQueue: [] })
   },
 
   executePlayerAction: (action) => {
     const state = get()
-    if (!state.battleState || state.battleState.result) return
-
     const { battleState, difficulty } = state
+    if (!battleState || battleState.result || !difficulty) return
     const { player, enemy, round, isPlayerFirst } = battleState
     const queueItems: ActionQueueItem[] = []
     const logEntries: TurnLogEntry[] = []
@@ -90,9 +87,11 @@ export const useBattleStore = create<BattleStoreState & BattleStoreActions>((set
     const playerSkill = resolveSkill(player, action)
     if (!playerSkill) return
 
-    // ─── 적 행동 결정 ──────────────────────────────
-    const enemyAction = decideEnemyAction(updatedEnemy, updatedPlayer, difficulty!)
+    // ─── 적 행동 결정 (MP 부족 시 기본공격 fallback) ──
+    const enemyAction = decideEnemyAction(updatedEnemy, updatedPlayer, difficulty)
     const enemySkill = resolveSkill(enemy, enemyAction)
+      ?? enemy.skills.find((s) => s.type === 'attack' && s.isDefault)
+      ?? null
     if (!enemySkill) return
 
     // ─── 선공/후공 순서로 실행 ─────────────────────
