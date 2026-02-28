@@ -1,12 +1,16 @@
 import type {
   Character, BattleState, BattleAction, BattleResult, BattlePhase,
-  Difficulty, Skill, ActionQueueItem, TurnLogEntry, ActiveEffect,
+  Difficulty, Skill, ActionQueueItem, TurnLogEntry,
 } from '../types'
-import { executeSkill, type SkillExecutionResult } from './skill-executor'
+import { executeSkill } from './skill-executor'
 import { tickEffects, findExpiringEffects } from './effects'
 import { determineFirstMover, checkBattleEnd } from './turn'
 import { decideEnemyAction } from './enemy-ai'
 import { nextPhase } from './battle-state-machine'
+import {
+  resolveSkill, applyActorResult, applyTargetResult,
+  toQueueItem, makeExpireItems,
+} from './round-helpers'
 
 /**
  * 라운드 실행 순수 함수.
@@ -170,7 +174,7 @@ export function executeRound(
   }
 }
 
-// ─── 헬퍼 함수들 ───────────────────────────────────────────
+// ─── 내부 헬퍼 ──────────────────────────────────────────
 
 /**
  * 선공/후공 한 턴 실행: 스킬 적용 → 캐릭터 상태 업데이트 → 큐 아이템 생성.
@@ -223,110 +227,5 @@ function makeBattleEndState(
     phase,
     log: [...battleState.log, ...logEntries],
     result,
-  }
-}
-
-/** 만료 효과에 대한 큐 아이템 + 로그 엔트리 생성 */
-function makeExpireItems(
-  expired: ActiveEffect[],
-  side: 'player' | 'enemy',
-  characterName: string,
-  round: number,
-  playerSnapshot: Character,
-  enemySnapshot: Character,
-): { queueItem: ActionQueueItem; logEntry: TurnLogEntry }[] {
-  return expired.map((effect) => {
-    const sign = effect.type === 'buff' ? '+' : '-'
-    const logEntry: TurnLogEntry = {
-      round,
-      actor: side,
-      actorName: characterName,
-      skillType: effect.type,
-      action: `${characterName}의 ${effect.sourceName} 효과(${effect.targetStat.toUpperCase()} ${sign}${effect.amount})가 만료됐다`,
-    }
-    return {
-      logEntry,
-      queueItem: {
-        type: 'effect-expire' as const,
-        actor: side,
-        actorName: characterName,
-        description: logEntry.action,
-        value: effect.amount,
-        targetStat: effect.targetStat,
-        logEntry,
-        playerSnapshot,
-        enemySnapshot,
-      },
-    }
-  })
-}
-
-function resolveSkill(character: Character, action: BattleAction): Skill | null {
-  if (action.type === 'attack') {
-    return character.skills.find((s) => s.type === 'attack' && s.isDefault) ?? null
-  }
-  if (action.type === 'defend') {
-    return character.skills.find((s) => s.type === 'defend') ?? null
-  }
-  if (action.type === 'skill' && action.skillId) {
-    const skill = character.skills.find((s) => s.id === action.skillId)
-    if (skill && character.currentMp >= skill.mpCost) return skill
-  }
-  return null
-}
-
-function applyActorResult(actor: Character, result: SkillExecutionResult): Character {
-  return {
-    ...actor,
-    currentHp: Math.min(actor.baseStats.hp, actor.currentHp + result.actorHpChange),
-    currentMp: Math.max(0, actor.currentMp + result.actorMpChange),
-    activeEffects: result.newActorEffects,
-  }
-}
-
-function applyTargetResult(target: Character, result: SkillExecutionResult): Character {
-  return {
-    ...target,
-    currentHp: Math.max(0, target.currentHp + result.targetHpChange),
-    activeEffects: result.newTargetEffects,
-  }
-}
-
-function determineQueueItemType(logEntry: TurnLogEntry): ActionQueueItem['type'] {
-  switch (logEntry.skillType) {
-    case 'attack': return 'damage'
-    case 'heal': return 'heal'
-    case 'defend': return 'defend'
-    case 'buff': return 'buff'
-    case 'debuff': return 'debuff'
-  }
-}
-
-/** skillType에 따라 큐 아이템에 표시할 value를 명시적으로 결정 */
-function resolveQueueValue(logEntry: TurnLogEntry): number | undefined {
-  switch (logEntry.skillType) {
-    case 'attack': return logEntry.damage
-    case 'heal': return logEntry.heal
-    case 'defend': return undefined
-    case 'buff': return undefined
-    case 'debuff': return undefined
-  }
-}
-
-function toQueueItem(
-  logEntry: TurnLogEntry,
-  side: 'player' | 'enemy',
-  playerSnapshot: Character,
-  enemySnapshot: Character,
-): ActionQueueItem {
-  return {
-    type: determineQueueItemType(logEntry),
-    actor: side,
-    actorName: logEntry.actorName,
-    description: logEntry.action,
-    value: resolveQueueValue(logEntry),
-    logEntry,
-    playerSnapshot,
-    enemySnapshot,
   }
 }
