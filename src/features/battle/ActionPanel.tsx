@@ -1,4 +1,12 @@
-import type { Character, BattleAction } from '../../types'
+import type { Character, BattleAction, SkillType } from '../../types'
+
+const SKILL_BUTTON_STYLE: Record<SkillType, string> = {
+  attack: 'bg-red-700 hover:bg-red-600',
+  defend: 'bg-blue-700 hover:bg-blue-600',
+  heal:   'bg-green-700 hover:bg-green-600',
+  buff:   'bg-yellow-700 hover:bg-yellow-600',
+  debuff: 'bg-purple-700 hover:bg-purple-600',
+}
 
 interface ActionPanelProps {
   player: Character
@@ -29,7 +37,7 @@ export function ActionPanel({ player, onAction, disabled }: ActionPanelProps) {
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               isDisabled
                 ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                : 'bg-gray-700 text-white hover:bg-gray-600'
+                : `${SKILL_BUTTON_STYLE[skill.type]} text-white`
             }`}
           >
             <span>{skill.name}</span>
