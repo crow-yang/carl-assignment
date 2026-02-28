@@ -52,6 +52,7 @@ export function executeSkill(
         newTargetEffects: target.activeEffects,
         isDefending: false,
         logEntry: {
+          id: crypto.randomUUID(),
           round,
           actor: actorSide,
           actorName,
@@ -73,6 +74,7 @@ export function executeSkill(
         newTargetEffects: target.activeEffects,
         isDefending: true,
         logEntry: {
+          id: crypto.randomUUID(),
           round,
           actor: actorSide,
           actorName,
@@ -95,6 +97,7 @@ export function executeSkill(
         newTargetEffects: target.activeEffects,
         isDefending: false,
         logEntry: {
+          id: crypto.randomUUID(),
           round,
           actor: actorSide,
           actorName,
@@ -128,6 +131,7 @@ export function executeSkill(
         newTargetEffects: isBuff ? target.activeEffects : newEffects,
         isDefending: false,
         logEntry: {
+          id: crypto.randomUUID(),
           round,
           actor: actorSide,
           actorName,

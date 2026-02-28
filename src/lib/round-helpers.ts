@@ -91,6 +91,7 @@ export function makeExpireItems(
   return expired.map((effect) => {
     const sign = effect.type === 'buff' ? '+' : '-'
     const logEntry: TurnLogEntry = {
+      id: crypto.randomUUID(),
       round,
       actor: side,
       actorName: characterName,

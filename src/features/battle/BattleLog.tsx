@@ -35,9 +35,9 @@ export function BattleLog({ log }: BattleLogProps) {
       {log.length === 0 ? (
         <p className="text-sm text-gray-500">전투를 시작하세요...</p>
       ) : (
-        log.map((entry, i) => (
+        log.map((entry) => (
           <div
-            key={i}
+            key={entry.id}
             className={`text-sm animate-slide-up ${
               entry.actor === 'player' ? 'text-blue-300' : 'text-red-300'
             }`}

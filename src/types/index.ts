@@ -106,6 +106,7 @@ export type BattleAction =
   | { type: 'skill'; skillId: string }
 
 export interface TurnLogEntry {
+  id: string       // 고유 ID (React key용)
   round: number
   actor: 'player' | 'enemy'
   actorName: string

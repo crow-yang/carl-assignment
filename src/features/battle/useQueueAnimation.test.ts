@@ -18,7 +18,7 @@ const makeQueueItem = (overrides: Partial<ActionQueueItem> = {}): ActionQueueIte
   actorName: '플레이어',
   description: '공격!',
   value: 10,
-  logEntry: { round: 1, actor: 'player', actorName: '플레이어', skillType: 'attack', action: '공격!' },
+  logEntry: { id: 'test-log', round: 1, actor: 'player', actorName: '플레이어', skillType: 'attack', action: '공격!' },
   playerSnapshot: makeCharacter(90, 50),
   enemySnapshot: makeCharacter(80, 30),
   ...overrides,
@@ -115,8 +115,8 @@ describe('useQueueAnimation', () => {
     const { result } = renderHook(() => useQueueAnimation(processQueue))
 
     const fullLog = [
-      { round: 1, actor: 'player' as const, actorName: 'A', skillType: 'attack' as const, action: '행동1' },
-      { round: 1, actor: 'enemy' as const, actorName: 'B', skillType: 'attack' as const, action: '행동2' },
+      { id: 'log-1', round: 1, actor: 'player' as const, actorName: 'A', skillType: 'attack' as const, action: '행동1' },
+      { id: 'log-2', round: 1, actor: 'enemy' as const, actorName: 'B', skillType: 'attack' as const, action: '행동2' },
     ]
 
     // 애니메이션 전: 전체 로그

@@ -17,7 +17,7 @@ const makeItem = (overrides: Partial<ActionQueueItem> = {}): ActionQueueItem => 
   actorName: '플레이어',
   description: '공격!',
   value: 10,
-  logEntry: { round: 1, actor: 'player', actorName: '플레이어', skillType: 'attack', action: '공격!' },
+  logEntry: { id: 'test-log', round: 1, actor: 'player', actorName: '플레이어', skillType: 'attack', action: '공격!' },
   playerSnapshot: makeCharacter(),
   enemySnapshot: makeCharacter(),
   ...overrides,
