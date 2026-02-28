@@ -20,6 +20,27 @@ interface SkillFormProps {
 
 const CUSTOM_SKILL_TYPES: CustomSkillType[] = ['attack', 'heal', 'buff', 'debuff']
 
+function NumberInput({ label, width = 'w-24', ...props }: {
+  label: string
+  width?: string
+  min: number
+  max: number
+  step?: number
+  value: number
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+}) {
+  return (
+    <div>
+      <label className="block text-xs text-gray-400 mb-1">{label}</label>
+      <input
+        type="number"
+        {...props}
+        className={`${width} px-3 py-1.5 bg-gray-900 border border-gray-600 rounded text-white text-sm focus:outline-none focus:border-blue-500`}
+      />
+    </div>
+  )
+}
+
 export function SkillForm({ onSubmit, onCancel }: SkillFormProps) {
   const [name, setName] = useState('')
   const [type, setType] = useState<CustomSkillType>('attack')
@@ -44,19 +65,7 @@ export function SkillForm({ onSubmit, onCancel }: SkillFormProps) {
 
   const handleSubmit = () => {
     if (!canSubmit) return
-    const base = { name, type, mpCost }
-    switch (type) {
-      case 'attack':
-        onSubmit({ ...base, multiplier })
-        break
-      case 'heal':
-        onSubmit({ ...base, healAmount })
-        break
-      case 'buff':
-      case 'debuff':
-        onSubmit({ ...base, targetStat, amount, duration })
-        break
-    }
+    onSubmit(formData)
   }
 
   return (
@@ -103,46 +112,15 @@ export function SkillForm({ onSubmit, onCancel }: SkillFormProps) {
       </div>
 
       {/* MP 소모 */}
-      <div>
-        <label className="block text-xs text-gray-400 mb-1">MP 소모 (1~30)</label>
-        <input
-          type="number"
-          min={1}
-          max={30}
-          value={mpCost}
-          onChange={(e) => setMpCost(Number(e.target.value))}
-          className="w-24 px-3 py-1.5 bg-gray-900 border border-gray-600 rounded text-white text-sm focus:outline-none focus:border-blue-500"
-        />
-      </div>
+      <NumberInput label="MP 소모 (1~30)" min={1} max={30} value={mpCost} onChange={(e) => setMpCost(Number(e.target.value))} />
 
       {/* 타입별 추가 필드 */}
       {type === 'attack' && (
-        <div>
-          <label className="block text-xs text-gray-400 mb-1">배율 (1.0~3.0)</label>
-          <input
-            type="number"
-            min={1.0}
-            max={3.0}
-            step={0.1}
-            value={multiplier}
-            onChange={(e) => setMultiplier(Number(e.target.value))}
-            className="w-24 px-3 py-1.5 bg-gray-900 border border-gray-600 rounded text-white text-sm focus:outline-none focus:border-blue-500"
-          />
-        </div>
+        <NumberInput label="배율 (1.0~3.0)" min={1.0} max={3.0} step={0.1} value={multiplier} onChange={(e) => setMultiplier(Number(e.target.value))} />
       )}
 
       {type === 'heal' && (
-        <div>
-          <label className="block text-xs text-gray-400 mb-1">회복량 (10~50)</label>
-          <input
-            type="number"
-            min={10}
-            max={50}
-            value={healAmount}
-            onChange={(e) => setHealAmount(Number(e.target.value))}
-            className="w-24 px-3 py-1.5 bg-gray-900 border border-gray-600 rounded text-white text-sm focus:outline-none focus:border-blue-500"
-          />
-        </div>
+        <NumberInput label="회복량 (10~50)" min={10} max={50} value={healAmount} onChange={(e) => setHealAmount(Number(e.target.value))} />
       )}
 
       {(type === 'buff' || type === 'debuff') && (
@@ -167,28 +145,8 @@ export function SkillForm({ onSubmit, onCancel }: SkillFormProps) {
             </div>
           </div>
           <div className="flex gap-4">
-            <div>
-              <label className="block text-xs text-gray-400 mb-1">수치 (1~10)</label>
-              <input
-                type="number"
-                min={1}
-                max={10}
-                value={amount}
-                onChange={(e) => setAmount(Number(e.target.value))}
-                className="w-20 px-3 py-1.5 bg-gray-900 border border-gray-600 rounded text-white text-sm focus:outline-none focus:border-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-400 mb-1">지속 턴 (1~5)</label>
-              <input
-                type="number"
-                min={1}
-                max={5}
-                value={duration}
-                onChange={(e) => setDuration(Number(e.target.value))}
-                className="w-20 px-3 py-1.5 bg-gray-900 border border-gray-600 rounded text-white text-sm focus:outline-none focus:border-blue-500"
-              />
-            </div>
+            <NumberInput label="수치 (1~10)" min={1} max={10} value={amount} onChange={(e) => setAmount(Number(e.target.value))} width="w-20" />
+            <NumberInput label="지속 턴 (1~5)" min={1} max={5} value={duration} onChange={(e) => setDuration(Number(e.target.value))} width="w-20" />
           </div>
         </div>
       )}
