@@ -10,9 +10,11 @@ function App() {
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-gray-900 text-white">
-        {phase === 'setup' && <SetupPage />}
-        {phase === 'battle' && <BattlePage />}
-        {phase === 'result' && <ResultPage />}
+        <div key={phase} className="animate-fade-in">
+          {phase === 'setup' && <SetupPage />}
+          {phase === 'battle' && <BattlePage />}
+          {phase === 'result' && <ResultPage />}
+        </div>
       </div>
     </ErrorBoundary>
   )
