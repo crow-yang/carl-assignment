@@ -30,11 +30,11 @@ export function ResultPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center px-4">
       <div className="text-center space-y-6">
         <h1
           data-testid="result-title"
-          className={`text-4xl font-bold ${RESULT_COLOR[result]}`}
+          className={`text-2xl sm:text-4xl font-bold ${RESULT_COLOR[result]}`}
         >
           {RESULT_TEXT[result]}
         </h1>

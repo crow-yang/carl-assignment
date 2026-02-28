@@ -21,7 +21,7 @@ export function CharacterPanel({ character, side }: CharacterPanelProps) {
       {/* 이름 */}
       <h3
         data-testid={`${testIdPrefix}-name`}
-        className="text-lg font-bold mb-3"
+        className="text-base sm:text-lg font-bold mb-3"
       >
         {character.name}
       </h3>

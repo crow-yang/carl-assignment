@@ -8,7 +8,7 @@ interface ActionPanelProps {
 
 export function ActionPanel({ player, onAction, disabled }: ActionPanelProps) {
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-2 justify-center">
       {player.skills.map((skill, index) => {
         const canUse = player.currentMp >= skill.mpCost
         const isDisabled = disabled || !canUse

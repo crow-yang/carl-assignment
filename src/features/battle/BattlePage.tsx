@@ -57,7 +57,7 @@ export function BattlePage() {
         </div>
 
         {/* 캐릭터 패널 */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <CharacterPanel character={shownPlayer} side="player" />
           <CharacterPanel character={shownEnemy} side="enemy" />
         </div>
