@@ -125,12 +125,10 @@ npm run lint
 
 ## 추가 구현 사항
 
-과제 요구사항 외에 프로덕션 품질을 위해 추가로 구현한 사항:
+과제 요구사항 외에 추가로 구현한 사항:
 
-- **7차례 리팩토링 리뷰 사이클**: 구현 후 코드 리뷰 → 수정을 7회 반복. 총 75개 이슈 발견, 45개 수정
 - **전투 비주얼 연출**: 데미지 팝업(float-up), 피격 이펙트(shake), 회복 이펙트(pulse-heal), 페이즈 전환 fade-in
 - **모바일 반응형**: `sm:` 브레이크포인트로 캐릭터 패널/로그/결과 화면 반응형 대응
-- **큐 기반 전투 연출**: 한 라운드의 행동을 큐에 적재 → UI가 순차 소비하며 HP 바가 점진적으로 변화
 - **버프/디버프 중첩 방지**: 같은 type+targetStat 효과는 교체 방식 (무한 중첩 버그 원천 차단)
 
 ## 개발 일지
@@ -138,4 +136,4 @@ npm run lint
 구현 과정, 기술 선택 근거, 트러블슈팅 내역을 `dev-log/` 디렉토리에 기록했습니다:
 
 - [001-tech-stack-and-architecture.md](dev-log/001-tech-stack-and-architecture.md) — 기술 스택 선정 이유 + 아키텍처 결정
-- [002-implementation.md](dev-log/002-implementation.md) — 구현 과정 + 7회 리뷰 사이클 + 트러블슈팅
+- [002-implementation.md](dev-log/002-implementation.md) — 구현 과정 + 트러블슈팅
