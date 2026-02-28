@@ -13,7 +13,7 @@ import { nextPhase } from './battle-state-machine'
  *
  * 실행 플로우:
  *
- *   executeRound(battleState, playerAction, difficulty)
+ *   executeRound(battleState, playerAction, difficulty, rng?)
  *     ├─ resolveSkill(player, playerAction) → playerSkill
  *     ├─ decideEnemyAction → resolveSkill → enemySkill
  *     ├─ isPlayerFirst? → 선공/후공 순서 결정
@@ -41,6 +41,7 @@ export function executeRound(
   battleState: BattleState,
   playerAction: BattleAction,
   difficulty: Difficulty,
+  rng?: () => number,
 ): RoundExecutionResult | null {
   if (battleState.result) return null
 
@@ -50,7 +51,7 @@ export function executeRound(
   const playerSkill = resolveSkill(player, playerAction)
   if (!playerSkill) return null
 
-  const enemyAction = decideEnemyAction(enemy, player, difficulty)
+  const enemyAction = decideEnemyAction(enemy, player, difficulty, rng)
   const enemySkill = resolveSkill(enemy, enemyAction)
     ?? enemy.skills.find((s) => s.type === 'attack' && s.isDefault)
     ?? null
