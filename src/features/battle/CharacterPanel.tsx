@@ -25,13 +25,13 @@ export function CharacterPanel({ character, side, activeEffect }: CharacterPanel
   return (
     <div
       data-testid={`${testIdPrefix}-panel`}
-      className={`p-4 bg-gray-800 rounded-lg border-2 ${
-        side === 'player' ? 'border-blue-800' : 'border-red-800'
+      className={`p-4 bg-gray-800 rounded-xl border-2 shadow-lg ${
+        side === 'player' ? 'border-blue-800 shadow-blue-900/20' : 'border-red-800 shadow-red-900/20'
       } ${effectClass}`}
     >
       {/* 캐릭터 아바타 + 이름 */}
       <div className="flex items-center gap-2 mb-3">
-        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl ${
+        <div className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl ${
           side === 'player'
             ? 'bg-linear-to-br from-blue-600 to-blue-800 ring-2 ring-blue-400'
             : 'bg-linear-to-br from-red-600 to-red-800 ring-2 ring-red-400'
@@ -63,7 +63,7 @@ export function CharacterPanel({ character, side, activeEffect }: CharacterPanel
           className="h-3 bg-gray-700 rounded-full overflow-hidden"
         >
           <div
-            className="h-full bg-red-500 transition-all duration-300"
+            className="h-full bg-linear-to-r from-red-600 to-red-400 transition-all duration-300"
             style={{ width: `${hpPercent}%` }}
           />
         </div>
@@ -86,7 +86,7 @@ export function CharacterPanel({ character, side, activeEffect }: CharacterPanel
           className="h-3 bg-gray-700 rounded-full overflow-hidden"
         >
           <div
-            className="h-full bg-blue-500 transition-all duration-300"
+            className="h-full bg-linear-to-r from-blue-600 to-blue-400 transition-all duration-300"
             style={{ width: `${mpPercent}%` }}
           />
         </div>

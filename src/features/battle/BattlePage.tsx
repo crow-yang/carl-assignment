@@ -70,7 +70,7 @@ export function BattlePage() {
             <DamagePopup item={currentItem} side="player" />
           </div>
           <div className="hidden sm:flex items-center justify-center">
-            <span className="text-2xl font-black text-gray-600 select-none">VS</span>
+            <span className="text-3xl font-black text-gray-500 select-none drop-shadow-[0_0_8px_rgba(255,255,255,0.15)]">VS</span>
           </div>
           <div className="relative">
             <CharacterPanel

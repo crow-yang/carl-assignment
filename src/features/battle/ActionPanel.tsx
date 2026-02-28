@@ -1,11 +1,11 @@
 import type { Character, BattleAction, SkillType } from '../../types'
 
 const SKILL_BUTTON_STYLE: Record<SkillType, string> = {
-  attack: 'bg-red-700 hover:bg-red-600',
-  defend: 'bg-blue-700 hover:bg-blue-600',
-  heal:   'bg-green-700 hover:bg-green-600',
-  buff:   'bg-yellow-700 hover:bg-yellow-600',
-  debuff: 'bg-purple-700 hover:bg-purple-600',
+  attack: 'bg-red-700 hover:bg-red-600 shadow-md shadow-red-900/40',
+  defend: 'bg-blue-700 hover:bg-blue-600 shadow-md shadow-blue-900/40',
+  heal:   'bg-green-700 hover:bg-green-600 shadow-md shadow-green-900/40',
+  buff:   'bg-yellow-700 hover:bg-yellow-600 shadow-md shadow-yellow-900/40',
+  debuff: 'bg-purple-700 hover:bg-purple-600 shadow-md shadow-purple-900/40',
 }
 
 interface ActionPanelProps {
@@ -34,7 +34,7 @@ export function ActionPanel({ player, onAction, disabled }: ActionPanelProps) {
             data-testid={`skill-button-${index}`}
             onClick={() => onAction(action)}
             disabled={isDisabled}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-[colors,transform] active:scale-95 ${
               isDisabled
                 ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
                 : `${SKILL_BUTTON_STYLE[skill.type]} text-white`

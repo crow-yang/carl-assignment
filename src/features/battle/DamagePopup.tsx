@@ -15,7 +15,7 @@ export function DamagePopup({ item, side }: DamagePopupProps) {
   return (
     <div
       key={`${item.actor}-${item.type}-${item.value}`}
-      className={`absolute -top-2 left-1/2 -translate-x-1/2 text-lg font-bold animate-float-up pointer-events-none ${colorClass}`}
+      className={`absolute -top-2 left-1/2 -translate-x-1/2 text-xl font-black animate-float-up pointer-events-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] ${colorClass}`}
     >
       {text}
     </div>

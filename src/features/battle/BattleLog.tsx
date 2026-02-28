@@ -30,7 +30,7 @@ export function BattleLog({ log }: BattleLogProps) {
       ref={containerRef}
       role="log"
       aria-live="polite"
-      className="h-32 sm:h-48 overflow-y-auto p-3 bg-gray-800 rounded-lg border border-gray-700 space-y-1"
+      className="h-32 sm:h-48 overflow-y-auto p-3 bg-gray-800/80 rounded-xl border border-gray-700/50 space-y-1"
     >
       {log.length === 0 ? (
         <p className="text-sm text-gray-500">전투를 시작하세요...</p>
