@@ -1,12 +1,11 @@
-import { useState, useRef, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useBattleStore } from '../../stores/battle-store'
 import { useGameStore } from '../../stores/game-store'
 import { CharacterPanel } from './CharacterPanel'
 import { ActionPanel } from './ActionPanel'
 import { BattleLog } from './BattleLog'
-import type { BattleAction, Character } from '../../types'
-
-const QUEUE_DELAY = 600 // ms between queue items
+import { useQueueAnimation } from './useQueueAnimation'
+import type { BattleAction } from '../../types'
 
 export function BattlePage() {
   const battleState = useBattleStore((s) => s.battleState)
@@ -14,21 +13,8 @@ export function BattlePage() {
   const processQueue = useBattleStore((s) => s.processQueue)
   const setPhase = useGameStore((s) => s.setPhase)
 
-  const [isAnimating, setIsAnimating] = useState(false)
-  // 큐 소비 중 표시할 캐릭터 스냅샷 (null이면 battleState의 값 사용)
-  const [displayPlayer, setDisplayPlayer] = useState<Character | null>(null)
-  const [displayEnemy, setDisplayEnemy] = useState<Character | null>(null)
-  // 로그 점진적 공개: 이번 라운드 시작 전 로그 길이 + 공개된 엔트리 수
-  const [prevLogLength, setPrevLogLength] = useState(0)
-  const [revealedCount, setRevealedCount] = useState(0)
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  // cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current)
-    }
-  }, [])
+  const { isAnimating, displayPlayer, displayEnemy, startConsuming, getVisibleLog } =
+    useQueueAnimation(processQueue)
 
   // 전투 종료 시 결과 화면 전환 (외부 시스템 동기화 — 타이머)
   useEffect(() => {
@@ -42,51 +28,10 @@ export function BattlePage() {
 
   const { player, enemy, round, result, log } = battleState
 
-  // 큐 순차 소비 — 이벤트 핸들러에서 직접 호출 (effect 아님)
-  //
-  // 흐름:
-  //   handleAction → executePlayerAction(동기, 큐 적재)
-  //     → startConsuming → processQueue → 스냅샷 적용
-  //       → QUEUE_DELAY 후 다음 아이템 ... → 큐 비면 스냅샷 해제
-  const startConsuming = () => {
-    setIsAnimating(true)
-
-    const consume = () => {
-      const item = processQueue()
-      if (item) {
-        setDisplayPlayer(item.playerSnapshot)
-        setDisplayEnemy(item.enemySnapshot)
-        setRevealedCount((c) => c + 1)
-        timerRef.current = setTimeout(consume, QUEUE_DELAY)
-      } else {
-        // 큐 소비 완료 → 스냅샷 해제, battleState의 최종값으로 복귀
-        setDisplayPlayer(null)
-        setDisplayEnemy(null)
-        setIsAnimating(false)
-        timerRef.current = null
-      }
-    }
-
-    // 첫 아이템 즉시 처리
-    const first = processQueue()
-    if (first) {
-      setDisplayPlayer(first.playerSnapshot)
-      setDisplayEnemy(first.enemySnapshot)
-      setRevealedCount(1)
-      timerRef.current = setTimeout(consume, QUEUE_DELAY)
-    } else {
-      setIsAnimating(false)
-    }
-  }
-
   const handleAction = (action: BattleAction) => {
     if (isAnimating || result) return
-    // 현재 라운드 시작 전 로그 길이 저장 → 점진적 공개 기준점
-    setPrevLogLength(log.length)
-    setRevealedCount(0)
     executePlayerAction(action)
-    // executePlayerAction은 동기적으로 큐를 채움 → 바로 소비 시작
-    startConsuming()
+    startConsuming(log.length)
   }
 
   // 애니메이션 중이면 스냅샷 표시, 아니면 battleState의 최종값
@@ -127,9 +72,7 @@ export function BattlePage() {
         </div>
 
         {/* 전투 로그 — 애니메이션 중엔 큐 소비 속도에 맞춰 점진적 공개 */}
-        <BattleLog
-          log={isAnimating ? log.slice(0, prevLogLength + revealedCount) : log}
-        />
+        <BattleLog log={getVisibleLog(log)} />
       </div>
     </div>
   )
