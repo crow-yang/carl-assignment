@@ -16,8 +16,13 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-linear-to-b from-gray-900 via-gray-900 to-gray-950 text-white">
-        <div key={phase} ref={phaseRef} tabIndex={-1} className="animate-fade-in outline-none">
+      <div className="min-h-screen bg-linear-to-b from-gray-900 via-gray-900 to-gray-950 text-white relative overflow-hidden">
+        {/* 배경 장식 — 미묘한 방사형 그라데이션 */}
+        <div aria-hidden="true" className="pointer-events-none fixed inset-0 overflow-hidden">
+          <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-500/3 rounded-full blur-3xl animate-glow-pulse" />
+          <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-purple-500/3 rounded-full blur-3xl animate-glow-pulse" style={{ animationDelay: '1s' }} />
+        </div>
+        <div key={phase} ref={phaseRef} tabIndex={-1} className="relative animate-fade-in outline-none">
           {phase === 'setup' && <SetupPage />}
           {phase === 'battle' && <BattlePage />}
           {phase === 'result' && <ResultPage />}
