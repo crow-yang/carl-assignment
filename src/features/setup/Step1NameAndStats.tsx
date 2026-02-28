@@ -1,9 +1,6 @@
 import { useSetupStore } from '../../stores/setup-store'
-import { STAT_RANGES, STAT_LABELS, TOTAL_STAT_POINTS } from '../../constants'
+import { STAT_KEYS, STAT_RANGES, STAT_LABELS, TOTAL_STAT_POINTS } from '../../constants'
 import { validateName } from '../../lib/validation'
-import type { StatType } from '../../types'
-
-const STAT_KEYS: StatType[] = ['hp', 'mp', 'atk', 'def', 'spd']
 
 export function Step1NameAndStats() {
   const name = useSetupStore((s) => s.name)

@@ -2,11 +2,15 @@ import type {
   StatType,
   StatRange,
   Stats,
+  SkillType,
   Difficulty,
   Skill,
   AttackSkill,
   DefendSkill,
 } from '../types'
+
+// ─── 스탯 키 순서 ────────────────────────────────────────────
+export const STAT_KEYS: StatType[] = ['hp', 'mp', 'atk', 'def', 'spd']
 
 // ─── 스탯 설정 ─────────────────────────────────────────────
 export const TOTAL_STAT_POINTS = 200
@@ -111,4 +115,18 @@ export const DIFFICULTY_DESCRIPTIONS: Record<Difficulty, string> = {
   easy:   '약한 적',
   normal: '보통 적',
   hard:   '강한 적',
+}
+
+// ─── 스킬 타입 레이블 ───────────────────────────────────────
+export const SKILL_TYPE_LABELS: Record<SkillType, string> = {
+  attack: '공격',
+  defend: '방어',
+  heal:   '회복',
+  buff:   '버프',
+  debuff: '디버프',
+}
+
+// ─── 유틸 ───────────────────────────────────────────────────
+export function sumStats(stats: Stats): number {
+  return stats.hp + stats.mp + stats.atk + stats.def + stats.spd
 }

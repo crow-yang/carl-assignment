@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { Stats, StatType, Difficulty, Skill, CustomSkillType, BuffTargetStat } from '../types'
-import { DEFAULT_STATS, DEFAULT_SKILLS, MAX_CUSTOM_SKILLS, STAT_RANGES, TOTAL_STAT_POINTS } from '../constants'
+import { DEFAULT_STATS, DEFAULT_SKILLS, MAX_CUSTOM_SKILLS, STAT_RANGES, TOTAL_STAT_POINTS, sumStats } from '../constants'
 
 interface SetupState {
   currentStep: 1 | 2 | 3
@@ -116,9 +116,7 @@ export const useSetupStore = create<SetupState & SetupActions>((set, get) => ({
   getAllSkills: () => [...DEFAULT_SKILLS, ...get().customSkills],
 
   getRemainingPoints: () => {
-    const { stats } = get()
-    const used = stats.hp + stats.mp + stats.atk + stats.def + stats.spd
-    return TOTAL_STAT_POINTS - used
+    return TOTAL_STAT_POINTS - sumStats(get().stats)
   },
 
   reset: () => {

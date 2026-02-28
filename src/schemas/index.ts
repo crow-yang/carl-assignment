@@ -1,5 +1,5 @@
 import { z } from 'zod/v4'
-import { STAT_RANGES, TOTAL_STAT_POINTS } from '../constants'
+import { STAT_RANGES, TOTAL_STAT_POINTS, sumStats } from '../constants'
 
 // ─── 이름 스키마 ────────────────────────────────────────────
 export const nameSchema = z.string().min(1, '이름을 입력해주세요').max(10, '10자 이하로 입력해주세요')
@@ -16,9 +16,7 @@ const baseStatsSchema = z.object({
 export const statsSchema = z.pipe(
   baseStatsSchema,
   z.custom<z.infer<typeof baseStatsSchema>>((data) => {
-    const d = data as z.infer<typeof baseStatsSchema>
-    const total = d.hp + d.mp + d.atk + d.def + d.spd
-    return total === TOTAL_STAT_POINTS
+    return sumStats(data as z.infer<typeof baseStatsSchema>) === TOTAL_STAT_POINTS
   }, `총 포인트가 ${TOTAL_STAT_POINTS}이어야 합니다`),
 )
 

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { SKILL_TYPE_LABELS } from '../../constants'
 import type { CustomSkillType, BuffTargetStat } from '../../types'
 
 interface SkillFormProps {
@@ -15,12 +16,7 @@ interface SkillFormProps {
   onCancel: () => void
 }
 
-const SKILL_TYPE_LABELS: Record<CustomSkillType, string> = {
-  attack: '공격',
-  heal: '회복',
-  buff: '버프',
-  debuff: '디버프',
-}
+const CUSTOM_SKILL_TYPES: CustomSkillType[] = ['attack', 'heal', 'buff', 'debuff']
 
 export function SkillForm({ onSubmit, onCancel }: SkillFormProps) {
   const [name, setName] = useState('')
@@ -86,7 +82,7 @@ export function SkillForm({ onSubmit, onCancel }: SkillFormProps) {
       <div>
         <label className="block text-xs text-gray-400 mb-1">타입</label>
         <div className="flex gap-2">
-          {(Object.keys(SKILL_TYPE_LABELS) as CustomSkillType[]).map((t) => (
+          {CUSTOM_SKILL_TYPES.map((t) => (
             <button
               key={t}
               type="button"

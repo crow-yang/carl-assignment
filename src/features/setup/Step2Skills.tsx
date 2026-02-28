@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useSetupStore } from '../../stores/setup-store'
-import { DEFAULT_SKILLS, MAX_CUSTOM_SKILLS } from '../../constants'
+import { DEFAULT_SKILLS, MAX_CUSTOM_SKILLS, SKILL_TYPE_LABELS } from '../../constants'
 import { SkillForm } from './SkillForm'
-import type { Skill, SkillType } from '../../types'
+import type { Skill } from '../../types'
 
 function getSkillDescription(skill: Skill): string {
   switch (skill.type) {
@@ -19,14 +19,6 @@ function getSkillDescription(skill: Skill): string {
     case 'debuff':
       return `상대 ${skill.targetStat.toUpperCase()} -${skill.amount} ${skill.duration}턴 (MP ${skill.mpCost})`
   }
-}
-
-const TYPE_LABELS: Record<SkillType, string> = {
-  attack: '공격',
-  defend: '방어',
-  heal: '회복',
-  buff: '버프',
-  debuff: '디버프',
 }
 
 export function Step2Skills() {
@@ -54,7 +46,7 @@ export function Step2Skills() {
               <div>
                 <span className="font-medium">{skill.name}</span>
                 <span className="ml-2 text-xs px-2 py-0.5 bg-gray-700 rounded text-gray-400">
-                  {TYPE_LABELS[skill.type]}
+                  {SKILL_TYPE_LABELS[skill.type]}
                 </span>
               </div>
               <span className="text-sm text-gray-400">{getSkillDescription(skill)}</span>
@@ -91,7 +83,7 @@ export function Step2Skills() {
                 <div>
                   <span className="font-medium">{skill.name}</span>
                   <span className="ml-2 text-xs px-2 py-0.5 bg-blue-900 rounded text-blue-300">
-                    {TYPE_LABELS[skill.type]}
+                    {SKILL_TYPE_LABELS[skill.type]}
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
