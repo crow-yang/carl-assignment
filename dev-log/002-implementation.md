@@ -295,6 +295,71 @@
 
 ---
 
+## 커버리지 100% 달성
+
+> 137 → 153 유닛 테스트로 확장하여 라인/함수 커버리지 100% 달성.
+
+### 커버리지 개선 내역
+
+| 파일 | 이전 | 이후 | 추가 테스트 |
+|------|------|------|-----------|
+| enemy-ai.ts | 80% | 100% | +7 (normal/hard 미커버 분기) |
+| battle-store.ts | 87% | 100% | +7 (적 선공, 후공 사망, 무승부, 힐/버프/디버프 큐, 패배) |
+| setup-store.ts | 69% branches | 100% | +2 (디버프 스킬, 옵셔널 기본값) |
+
+### 최종 커버리지
+- Statements: 99.68%
+- Lines: **100%**
+- Functions: **100%**
+- Branches: 97% (나머지 3%는 방어적 가드 — 적이 항상 기본공격 보유)
+
+---
+
+## 리뷰 사이클 #6: DRY 리팩토링
+
+> 커버리지 100% 달성 후 코드 품질 리팩토링. 9개 이슈 발견, 5개 수정.
+
+### 수정 이슈
+
+| # | 우선순위 | 이슈 | 수정 |
+|---|---------|------|------|
+| 1 | HIGH | `executePlayerAction` ~147행, 선공/후공 중복 | `executeMoverTurn` + `makeBattleEndState` 헬퍼 추출 |
+| 2 | MEDIUM | `getRemainingPoints` 합산 중복 | `sumStats()` → constants에 추가, setup-store + schema에서 재사용 |
+| 8 | LOW | `STAT_KEYS` 로컬 중복 선언 | constants로 이동 |
+| 9 | LOW | `SKILL_TYPE_LABELS` 2곳 중복 | constants에 통합, SkillForm + Step2Skills에서 공유 |
+| 3 | LOW | `action-queue.ts` 미사용 dead code | 파일 + 테스트 삭제 (프로덕션 미사용) |
+
+### 기술 상세
+
+**executeMoverTurn 추출 (battle-store.ts)**
+- 기존: 선공/후공 각각 ~35행의 동일 패턴 (executeSkill → if/else actor/target → applyResult → push)
+- 수정: `executeMoverTurn(player, enemy, skill, side, round, opponentDefending)` 헬퍼가 스킬 실행 + 결과 반영 + 큐 아이템 생성을 일괄 처리
+- 내부에서 side 기반으로 actor/target을 매핑하여 if/else 제거
+- `makeBattleEndState` 추가로 전투 종료 set() 중복도 제거
+
+**상수 통합 (constants/index.ts)**
+- `STAT_KEYS`: Step1NameAndStats 로컬 → constants로 이동
+- `SKILL_TYPE_LABELS`: SkillForm + Step2Skills 각각 선언 → constants 단일 소스
+- `sumStats()`: setup-store `getRemainingPoints` + schema `statsSchema` 합산 로직 통합
+
+### 보류 이슈 (과잉 리팩토링 판단)
+
+| # | 이슈 | 보류 이유 |
+|---|------|----------|
+| 4 | SkillForm 검증 매직넘버 | 스키마(서버)와 UI 검증은 역할이 다르고 라벨 텍스트 포함 |
+| 5 | HP/MP 바 컴포넌트 추출 | 2곳, 색상 다름, 추상화 이득 없음 |
+| 6 | toQueueItem targetStat 미설정 | optional 필드, 기능 무해 |
+| 7 | 모듈 ID 카운터 | 테스트 전용 reset, 프로덕션 무해 |
+
+### 검증 결과
+- ESLint: 0 에러
+- TypeScript: 0 에러
+- 빌드 성공
+- 유닛 테스트: 144개 통과 (action-queue 9개 테스트 제거)
+- E2E 테스트: 10개 통과 (14.0s)
+
+---
+
 ## 최종 요약
 
 | 사이클 | 발견 | 수정 | 핵심 |
@@ -304,5 +369,7 @@
 | #3 | 4개 | 3개 | 후공 방어 유지, 로그 점진적 공개, MP 부족 테스트 |
 | #4 | 18개 | 5개 | 효과 중첩 방지, 미사용 deps, 접근성 |
 | #5 | 2개 | 2개 | 빌드 수정, 폼 버튼 타입 |
+| 커버리지 | - | +16 | 라인/함수 100%, 분기 97% |
+| #6 | 9개 | 5개 | executeMoverTurn DRY, 상수 통합, dead code 제거 |
 
-**최종 수치:** 137 유닛 테스트 + 10 E2E 테스트, 빌드 성공, 린트/타입 에러 0
+**최종 수치:** 144 유닛 테스트 + 10 E2E 테스트, 빌드 성공, 린트/타입 에러 0, 커버리지 100%
