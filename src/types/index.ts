@@ -100,10 +100,10 @@ export type BattlePhase =
   | 'round-end'
   | 'battle-end'
 
-export interface BattleAction {
-  type: 'attack' | 'defend' | 'skill'
-  skillId?: string
-}
+export type BattleAction =
+  | { type: 'attack' }
+  | { type: 'defend' }
+  | { type: 'skill'; skillId: string }
 
 export interface TurnLogEntry {
   round: number

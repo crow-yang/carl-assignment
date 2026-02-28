@@ -1,11 +1,11 @@
 import { create } from 'zustand'
 import type {
   Character, BattleState, BattleAction, BattleResult,
-  Difficulty, Skill, ActionQueueItem, TurnLogEntry,
+  Difficulty, Skill, ActionQueueItem, TurnLogEntry, Stats,
 } from '../types'
 import { ENEMY_STATS, ENEMY_NAMES, ENEMY_SKILLS } from '../constants'
 import { executeSkill, type SkillExecutionResult } from '../lib/skill-executor'
-import { tickEffects } from '../lib/effects'
+import { tickEffects, resetEffectIdCounter } from '../lib/effects'
 import { determineFirstMover, checkBattleEnd } from '../lib/turn'
 import { decideEnemyAction } from '../lib/enemy-ai'
 import { nextPhase } from '../lib/battle-state-machine'
@@ -18,7 +18,7 @@ interface BattleStoreState {
 }
 
 interface BattleStoreActions {
-  initBattle: (playerName: string, playerStats: import('../types').Stats, playerSkills: Skill[], difficulty: Difficulty) => void
+  initBattle: (playerName: string, playerStats: Stats, playerSkills: Skill[], difficulty: Difficulty) => void
   executePlayerAction: (action: BattleAction) => void
   processQueue: () => ActionQueueItem | null
   getResult: () => { result: BattleResult; totalRounds: number } | null
@@ -232,7 +232,10 @@ export const useBattleStore = create<BattleStoreState & BattleStoreActions>((set
     return { result: battleState.result, totalRounds: battleState.round }
   },
 
-  reset: () => set({ ...initialState }),
+  reset: () => {
+    resetEffectIdCounter()
+    set({ ...initialState })
+  },
 }))
 
 // ─── 헬퍼 함수들 ───────────────────────────────────────────
