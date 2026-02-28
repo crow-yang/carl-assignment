@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { useSetupStore } from './setup-store'
+import { useSetupStore, selectRemainingPoints } from './setup-store'
 import { DEFAULT_STATS, DEFAULT_SKILLS, STAT_RANGES, TOTAL_STAT_POINTS, MAX_CUSTOM_SKILLS } from '../constants'
 
 describe('setup-store', () => {
@@ -68,8 +68,8 @@ describe('setup-store', () => {
   })
 
   // ─── 잔여 포인트 ──────────────────────────────────────
-  it('getRemainingPoints: 초기값', () => {
-    const remaining = useSetupStore.getState().getRemainingPoints()
+  it('selectRemainingPoints: 초기값', () => {
+    const remaining = selectRemainingPoints(useSetupStore.getState())
     const usedByDefault = DEFAULT_STATS.hp + DEFAULT_STATS.mp + DEFAULT_STATS.atk + DEFAULT_STATS.def + DEFAULT_STATS.spd
     expect(remaining).toBe(TOTAL_STAT_POINTS - usedByDefault)
   })

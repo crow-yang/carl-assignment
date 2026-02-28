@@ -1,4 +1,4 @@
-import { useSetupStore } from '../../stores/setup-store'
+import { useSetupStore, selectRemainingPoints } from '../../stores/setup-store'
 import { STAT_KEYS, STAT_RANGES, STAT_LABELS, TOTAL_STAT_POINTS } from '../../constants'
 import { validateName } from '../../lib/validation'
 
@@ -7,10 +7,8 @@ export function Step1NameAndStats() {
   const stats = useSetupStore((s) => s.stats)
   const setName = useSetupStore((s) => s.setName)
   const setStat = useSetupStore((s) => s.setStat)
-  const getRemainingPoints = useSetupStore((s) => s.getRemainingPoints)
+  const remaining = useSetupStore(selectRemainingPoints)
   const nextStep = useSetupStore((s) => s.nextStep)
-
-  const remaining = getRemainingPoints()
   const nameValidation = validateName(name)
   const canProceed = nameValidation.valid && remaining === 0
 

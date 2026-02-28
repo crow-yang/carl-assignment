@@ -29,7 +29,6 @@ interface SetupActions {
   removeCustomSkill: (skillId: string) => void
   setDifficulty: (difficulty: Difficulty) => void
   getAllSkills: () => Skill[]
-  getRemainingPoints: () => number
   reset: () => void
 }
 
@@ -115,12 +114,12 @@ export const useSetupStore = create<SetupState & SetupActions>((set, get) => ({
 
   getAllSkills: () => [...DEFAULT_SKILLS, ...get().customSkills],
 
-  getRemainingPoints: () => {
-    return TOTAL_STAT_POINTS - sumStats(get().stats)
-  },
-
   reset: () => {
     skillIdCounter = 0
     set({ ...initialState, stats: { ...DEFAULT_STATS }, customSkills: [] })
   },
 }))
+
+/** 잔여 포인트를 계산하는 파생 셀렉터 (프리미티브 반환으로 불필요한 리렌더 방지) */
+export const selectRemainingPoints = (state: SetupState): number =>
+  TOTAL_STAT_POINTS - sumStats(state.stats)
