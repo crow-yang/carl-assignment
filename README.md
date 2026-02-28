@@ -45,19 +45,20 @@ src/
 │   ├── effects.ts             # 버프/디버프 적용/만료
 │   ├── skill-executor.ts      # 스킬 타입별 실행
 │   ├── turn.ts                # 선공 판정, 전투 종료
+│   ├── round-executor.ts      # 라운드 실행 (순수 함수)
 │   ├── battle-state-machine.ts # 명시적 상태 전이
-│   ├── action-queue.ts        # 액션 큐 (불변 FIFO)
 │   ├── enemy-ai.ts            # 적 AI (rng 주입)
 │   └── validation.ts          # 스탯/스킬 검증
 ├── stores/         # Zustand 상태 관리
 │   ├── game-store.ts    # 게임 페이즈 (setup → battle → result)
 │   ├── setup-store.ts   # 세팅 상태
-│   └── battle-store.ts  # 전투 오케스트레이션
+│   └── battle-store.ts  # 전투 오케스트레이션 (5줄 위임)
 ├── features/       # UI 컴포넌트 (페이지별)
 │   ├── setup/      # 세팅 (3스텝 폼)
-│   ├── battle/     # 전투 (캐릭터패널, 액션패널, 로그)
+│   ├── battle/     # 전투 (캐릭터패널, 액션패널, 로그, 비주얼 이펙트)
 │   └── result/     # 결과 (승패, 턴수, 재시작)
-└── App.tsx         # 페이즈 라우팅
+├── ErrorBoundary.tsx  # 렌더링 에러 fallback
+└── App.tsx         # 페이즈 라우팅 + fade-in 전환
 ```
 
 ## 핵심 설계 결정
@@ -65,7 +66,7 @@ src/
 ### 1. 순수 함수 게임 로직 분리
 
 모든 게임 로직을 `lib/`에 순수 함수로 구현했습니다. UI 프레임워크와 완전히 독립적이어서:
-- 테스트가 즉각적 (133개 유닛 테스트, < 1초)
+- 테스트가 즉각적 (173개 유닛 테스트, < 1.2초)
 - 로직 변경 시 UI 변경 불필요 (관심사 분리)
 - 모든 분기 조건을 결정적으로 검증 가능
 
@@ -81,12 +82,35 @@ src/
 
 적 AI의 랜덤 함수를 파라미터로 주입합니다 (`decideEnemyAction(context, rng = Math.random)`). 프로덕션에서는 기본값 사용, 테스트에서는 고정 값 주입으로 결정적 테스트를 보장합니다.
 
+### 5. 에러 처리
+
+- **ErrorBoundary**: 렌더링 에러 시 앱 크래시 대신 "오류가 발생했습니다" fallback UI + 재시작 버튼 제공
+- **적 AI fallback**: 적이 사용할 스킬을 결정할 수 없거나 MP가 부족할 때, 항상 기본 공격으로 fallback하여 전투가 중단되지 않도록 보장
+- **Zod 런타임 검증**: 스탯 총합(200pt), 범위(min/max), 스킬 필드를 타입 레벨이 아닌 런타임에서도 검증하여 잘못된 데이터가 전투에 진입하는 것을 차단
+
+### 6. 접근성
+
+- 스텝 인디케이터: `<nav>` + `<ol>` + `aria-current="step"` 시맨틱 마크업
+- HP/MP 바: `role="progressbar"` + `aria-valuenow/min/max` + `aria-label`
+- 전투 로그: `role="log"` + `aria-live="polite"` (스크린 리더가 새 로그를 자동 읽음)
+- 스킬 타입 선택: `aria-pressed` 토글 버튼 패턴
+- HTML: `lang="ko"`, 페이지 title "턴제 배틀 게임"
+
+### 7. 성능 최적화
+
+- **Zustand 셀렉터**: 프리미티브 값만 반환하여 불필요한 리렌더 방지 (`selectRemainingPoints` 패턴)
+- **순수 함수 분리**: `round-executor.ts`로 라운드 로직을 추출하여 스토어(95줄)가 상태 업데이트만 담당
+- **CSS 애니메이션**: JS 런타임 0. Tailwind `@theme` 블록에 키프레임 정의 → GPU 가속
+- **빌드 사이즈**: 292KB (gzip 88KB) — React+Zustand+Zod 포함
+
 ## 테스트
 
 | 종류 | 파일 수 | 테스트 수 | 내용 |
 |------|--------|----------|------|
-| 유닛 | 11 | 133 | 게임 로직 + 스토어 |
+| 유닛 | 12 | 173 | 게임 로직 + 스토어 + 비주얼 헬퍼 + 큐 애니메이션 |
 | E2E | 3 | 10 | 세팅/전투/풀플로우 |
+
+커버리지: Lines **100%**, Functions **100%**, Branches **96.72%**
 
 ```bash
 # 유닛 테스트 실행
@@ -99,9 +123,19 @@ npx playwright test
 npm run lint
 ```
 
+## 추가 구현 사항
+
+과제 요구사항 외에 프로덕션 품질을 위해 추가로 구현한 사항:
+
+- **7차례 리팩토링 리뷰 사이클**: 구현 후 코드 리뷰 → 수정을 7회 반복. 총 75개 이슈 발견, 45개 수정
+- **전투 비주얼 연출**: 데미지 팝업(float-up), 피격 이펙트(shake), 회복 이펙트(pulse-heal), 페이즈 전환 fade-in
+- **모바일 반응형**: `sm:` 브레이크포인트로 캐릭터 패널/로그/결과 화면 반응형 대응
+- **큐 기반 전투 연출**: 한 라운드의 행동을 큐에 적재 → UI가 순차 소비하며 HP 바가 점진적으로 변화
+- **버프/디버프 중첩 방지**: 같은 type+targetStat 효과는 교체 방식 (무한 중첩 버그 원천 차단)
+
 ## 개발 일지
 
-구현 과정, 기술 선택 근거, 트러블슈팅 내역을 `dev-log/` 디렉토리에 기록하고 있습니다:
+구현 과정, 기술 선택 근거, 트러블슈팅 내역을 `dev-log/` 디렉토리에 기록했습니다:
 
 - [001-tech-stack-and-architecture.md](dev-log/001-tech-stack-and-architecture.md) — 기술 스택 선정 이유 + 아키텍처 결정
-- [002-implementation.md](dev-log/002-implementation.md) — 구현 과정 + 트러블슈팅 + 테스트 현황
+- [002-implementation.md](dev-log/002-implementation.md) — 구현 과정 + 7회 리뷰 사이클 + 트러블슈팅

@@ -49,9 +49,10 @@
 - nextPhase() 순수 함수: 모든 전이 경로를 명시적으로 정의
 - 풀 플로우 시뮬레이션 테스트 2개 포함
 
-### 1-7. 액션 큐 (9 테스트)
+### 1-7. 액션 큐 (9 테스트) → *리뷰 사이클 #6에서 삭제*
 - createQueue, enqueue, enqueueAll, dequeue — 모두 불변 함수
 - FIFO 순서 보장, 빈 큐 안전 처리
+- **후속**: 프로덕션 코드에서 미사용 확인 → 파일 + 테스트 삭제 (큐 로직은 battle-store에 인라인)
 
 ### 1-8. 적 AI (12 테스트)
 - 3단계 난이도별 전략, rng 주입으로 결정적 테스트
@@ -82,11 +83,13 @@
 - data-testid 명세 완전 준수
 - 잔여 포인트 실시간 표시, 범위 클램핑, 스킬 타입별 동적 폼
 
-### 전투 UI (4개 컴포넌트)
-- BattlePage, CharacterPanel, ActionPanel, BattleLog
+### 전투 UI (4+3개 컴포넌트)
+- **초기**: BattlePage, CharacterPanel, ActionPanel, BattleLog
+- **리뷰 사이클 #7 추가**: DamagePopup, battle-visual-helpers, useQueueAnimation 훅
 - **액션 큐 소비 패턴**: 이벤트 핸들러에서 직접 시작 (Effect 내 setState 금지 린트 준수)
-- HP/MP 바 + 버프/디버프 뱃지 표시
-- 전투 로그 자동 스크롤
+- HP/MP 바 + 버프/디버프 뱃지 표시 + `role="progressbar"` 접근성
+- 전투 로그 자동 스크롤 + `role="log"` + `aria-live="polite"`
+- 데미지/힐 팝업 (float-up), 피격 이펙트 (shake), 회복 이펙트 (pulse-heal)
 
 ### 결과 UI
 - **트러블슈팅: Zustand 셀렉터 무한 리렌더**
@@ -110,24 +113,27 @@
 
 ---
 
-## 테스트 요약
+## 테스트 요약 (최종)
 
 | 카테고리 | 테스트 파일 | 테스트 수 |
 |----------|-----------|----------|
 | 데미지 | damage.test.ts | 8 |
-| 효과 | effects.test.ts | 15 |
+| 효과 | effects.test.ts | 18 |
 | 스킬 실행 | skill-executor.test.ts | 9 |
 | 턴 진행 | turn.test.ts | 9 |
 | 상태 머신 | battle-state-machine.test.ts | 13 |
-| 액션 큐 | action-queue.test.ts | 9 |
-| 적 AI | enemy-ai.test.ts | 12 |
+| 적 AI | enemy-ai.test.ts | 19 |
 | 검증 | validation.test.ts | 22 |
 | game-store | game-store.test.ts | 3 |
-| setup-store | setup-store.test.ts | 18 |
-| battle-store | battle-store.test.ts | 15 |
-| **유닛 합계** | | **133** |
+| setup-store | setup-store.test.ts | 20 |
+| battle-store | battle-store.test.ts | 24 |
+| 비주얼 헬퍼 | battle-visual-helpers.test.ts | 22 |
+| 큐 애니메이션 | useQueueAnimation.test.ts | 6 |
+| **유닛 합계** | **12 파일** | **173** |
 | E2E | 3 파일 | **10** |
-| **전체 합계** | | **143** |
+| **전체 합계** | | **183** |
+
+> 초기 구현(133개) → 커버리지 100% 달성(+16) → 리뷰 사이클 #6(-9 삭제) → 리뷰 사이클 #7(+29 추가, 비주얼 헬퍼 22 + 큐 애니메이션 6 + value 검증 1)
 
 ---
 
