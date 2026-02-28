@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { decideEnemyAction } from './enemy-ai'
 import { ENEMY_SKILLS, ENEMY_STATS } from '../constants'
-import type { Character } from '../types'
+import type { Character, BattleAction } from '../types'
 
 function makeEnemy(difficulty: 'easy' | 'normal' | 'hard', overrides: Partial<Character> = {}): Character {
   const stats = ENEMY_STATS[difficulty]
@@ -28,6 +28,14 @@ function makePlayer(overrides: Partial<Character> = {}): Character {
   }
 }
 
+/** 타입 좁힘 후 skillId 추출 */
+function expectSkillId(action: BattleAction, expectedId: string) {
+  expect(action.type).toBe('skill')
+  if (action.type === 'skill') {
+    expect(action.skillId).toBe(expectedId)
+  }
+}
+
 describe('decideEnemyAction - easy', () => {
   it('rng 0.05 → 방어', () => {
     const action = decideEnemyAction(makeEnemy('easy'), makePlayer(), 'easy', () => 0.05)
@@ -36,8 +44,7 @@ describe('decideEnemyAction - easy', () => {
 
   it('rng 0.2 → 강타 (MP 충분)', () => {
     const action = decideEnemyAction(makeEnemy('easy'), makePlayer(), 'easy', () => 0.2)
-    expect(action.type).toBe('skill')
-    expect(action.skillId).toBe('enemy-smash-easy')
+    expectSkillId(action, 'enemy-smash-easy')
   })
 
   it('rng 0.5 → 기본 공격', () => {
@@ -55,15 +62,13 @@ describe('decideEnemyAction - easy', () => {
 describe('decideEnemyAction - normal', () => {
   it('HP > 50%일 때 rng 0.2 → 강타', () => {
     const action = decideEnemyAction(makeEnemy('normal'), makePlayer(), 'normal', () => 0.2)
-    expect(action.type).toBe('skill')
-    expect(action.skillId).toBe('enemy-smash-normal')
+    expectSkillId(action, 'enemy-smash-normal')
   })
 
   it('HP <= 50%일 때 rng 0.3 → 회복', () => {
     const enemy = makeEnemy('normal', { currentHp: 40 }) // 40/110 = 36%
     const action = decideEnemyAction(enemy, makePlayer(), 'normal', () => 0.3)
-    expect(action.type).toBe('skill')
-    expect(action.skillId).toBe('enemy-heal-normal')
+    expectSkillId(action, 'enemy-heal-normal')
   })
 
   it('HP <= 50%일 때 rng 0.5 → 방어', () => {
@@ -77,8 +82,7 @@ describe('decideEnemyAction - hard', () => {
   it('HP <= 30%이고 회복 가능 → 회복', () => {
     const enemy = makeEnemy('hard', { currentHp: 30 }) // 30/140 = 21%
     const action = decideEnemyAction(enemy, makePlayer(), 'hard', () => 0.5)
-    expect(action.type).toBe('skill')
-    expect(action.skillId).toBe('enemy-heal-hard')
+    expectSkillId(action, 'enemy-heal-hard')
   })
 
   it('HP <= 30%이고 MP 부족 → 방어 (fallback)', () => {
@@ -91,8 +95,7 @@ describe('decideEnemyAction - hard', () => {
     const enemy = makeEnemy('hard')
     const player = makePlayer()
     const action = decideEnemyAction(enemy, player, 'hard', () => 0.5)
-    expect(action.type).toBe('skill')
-    expect(action.skillId).toBe('enemy-weaken-hard')
+    expectSkillId(action, 'enemy-weaken-hard')
   })
 
   it('상대에게 DEF 디버프 이미 있으면 → 약화 스킵', () => {
@@ -101,7 +104,9 @@ describe('decideEnemyAction - hard', () => {
       activeEffects: [{ id: '1', type: 'debuff', targetStat: 'def', amount: 5, remainingTurns: 2, sourceName: '약화' }],
     })
     const action = decideEnemyAction(enemy, player, 'hard', () => 0.3)
-    expect(action.skillId).not.toBe('enemy-weaken-hard')
+    if (action.type === 'skill') {
+      expect(action.skillId).not.toBe('enemy-weaken-hard')
+    }
   })
 
   it('상대 HP <= 30%이면 → 강타 마무리', () => {
@@ -111,7 +116,6 @@ describe('decideEnemyAction - hard', () => {
       activeEffects: [{ id: '1', type: 'debuff', targetStat: 'def', amount: 5, remainingTurns: 2, sourceName: '약화' }],
     })
     const action = decideEnemyAction(enemy, player, 'hard', () => 0.5)
-    expect(action.type).toBe('skill')
-    expect(action.skillId).toBe('enemy-smash-hard')
+    expectSkillId(action, 'enemy-smash-hard')
   })
 })
