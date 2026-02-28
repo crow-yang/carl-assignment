@@ -1,9 +1,9 @@
 import type {
-  Character, BattleState, BattleAction, BattleResult,
-  Difficulty, Skill, ActionQueueItem, TurnLogEntry,
+  Character, BattleState, BattleAction, BattleResult, BattlePhase,
+  Difficulty, Skill, ActionQueueItem, TurnLogEntry, ActiveEffect,
 } from '../types'
 import { executeSkill, type SkillExecutionResult } from './skill-executor'
-import { tickEffects } from './effects'
+import { tickEffects, findExpiringEffects } from './effects'
 import { determineFirstMover, checkBattleEnd } from './turn'
 import { decideEnemyAction } from './enemy-ai'
 import { nextPhase } from './battle-state-machine'
@@ -26,6 +26,7 @@ import { nextPhase } from './battle-state-machine'
  *     │    └─ executeSkill → applyActor/Target → toQueueItem
  *     ├─ checkBattleEnd → 사망 시 early return
  *     │
+ *     ├─ findExpiringEffects (양쪽) → 만료 큐 아이템 생성
  *     ├─ tickEffects (양쪽)
  *     ├─ checkBattleEnd → 20턴 초과 확인
  *     └─ determineFirstMover (다음 라운드)
@@ -84,8 +85,12 @@ export function executeRound(
   // 선공 후 사망 확인
   const midResult = checkBattleEnd(updatedPlayer.currentHp, updatedEnemy.currentHp, round)
   if (midResult) {
+    const midPhase = nextPhase(
+      isPlayerFirst ? 'player-action' : 'enemy-action',
+      { isPlayerFirst, isFirstAction: true, targetDead: true, roundExceeded: false },
+    )
     return {
-      battleState: makeBattleEndState(battleState, updatedPlayer, updatedEnemy, playerDefending, enemyDefending, logEntries, midResult),
+      battleState: makeBattleEndState(battleState, updatedPlayer, updatedEnemy, playerDefending, enemyDefending, logEntries, midResult, midPhase),
       actionQueue: queueItems,
     }
   }
@@ -105,15 +110,29 @@ export function executeRound(
   // 후공 후 사망 확인
   const endResult = checkBattleEnd(updatedPlayer.currentHp, updatedEnemy.currentHp, round)
   if (endResult) {
+    const endPhase = nextPhase(
+      isPlayerFirst ? 'enemy-action' : 'player-action',
+      { isPlayerFirst, isFirstAction: false, targetDead: true, roundExceeded: false },
+    )
     return {
-      battleState: makeBattleEndState(battleState, updatedPlayer, updatedEnemy, playerDefending, enemyDefending, logEntries, endResult),
+      battleState: makeBattleEndState(battleState, updatedPlayer, updatedEnemy, playerDefending, enemyDefending, logEntries, endResult, endPhase),
       actionQueue: queueItems,
     }
   }
 
-  // ─── 라운드 종료: 효과 틱 + 다음 라운드 ───────
+  // ─── 라운드 종료: 만료 감지 → 효과 틱 → 다음 라운드 ───────
+  const expiredPlayer = findExpiringEffects(updatedPlayer.activeEffects)
+  const expiredEnemy = findExpiringEffects(updatedEnemy.activeEffects)
+
   updatedPlayer = { ...updatedPlayer, activeEffects: tickEffects(updatedPlayer.activeEffects) }
   updatedEnemy = { ...updatedEnemy, activeEffects: tickEffects(updatedEnemy.activeEffects) }
+
+  const expireItems = [
+    ...makeExpireItems(expiredPlayer, 'player', updatedPlayer.name, round, updatedPlayer, updatedEnemy),
+    ...makeExpireItems(expiredEnemy, 'enemy', updatedEnemy.name, round, updatedPlayer, updatedEnemy),
+  ]
+  queueItems.push(...expireItems.map((i) => i.queueItem))
+  logEntries.push(...expireItems.map((i) => i.logEntry))
 
   const nextRound = round + 1
   const roundEndResult = checkBattleEnd(updatedPlayer.currentHp, updatedEnemy.currentHp, nextRound)
@@ -122,16 +141,24 @@ export function executeRound(
     updatedEnemy.baseStats.spd,
   ) === 'player'
 
-  const newPhase = roundEndResult
-    ? 'battle-end' as const
-    : nextPhase('round-end', { isPlayerFirst: newIsPlayerFirst, isFirstAction: false, targetDead: false, roundExceeded: false })
+  const newPhase = nextPhase('round-end', {
+    isPlayerFirst: newIsPlayerFirst,
+    isFirstAction: false,
+    targetDead: false,
+    roundExceeded: !!roundEndResult,
+  })
 
   return {
     battleState: {
       round: roundEndResult ? round : nextRound,
       player: updatedPlayer,
       enemy: updatedEnemy,
-      // 후공의 방어는 다음 라운드 선공의 공격에 대해 유효 (1라운드 지속)
+      // ── 후공 방어 carry ──
+      // 후공의 방어는 다음 라운드 선공의 공격에 대해 유효하다.
+      // 설계 의도: 후공이 방어를 선택하면 해당 라운드에서는 이미 선공이 행동한 뒤이므로,
+      // 방어 효과가 즉시 적용될 기회가 없다. 이를 보상하기 위해 다음 라운드 선공의
+      // 공격까지 방어가 유지된다. 선공의 방어는 같은 라운드 후공 공격에 바로 적용되므로
+      // carry하지 않는다 (리셋).
       playerDefending: secondSide === 'player' ? playerDefending : false,
       enemyDefending: secondSide === 'enemy' ? enemyDefending : false,
       isPlayerFirst: newIsPlayerFirst,
@@ -185,6 +212,7 @@ function makeBattleEndState(
   enemyDefending: boolean,
   logEntries: TurnLogEntry[],
   result: BattleResult,
+  phase: BattlePhase,
 ): BattleState {
   return {
     ...battleState,
@@ -192,10 +220,45 @@ function makeBattleEndState(
     enemy,
     playerDefending,
     enemyDefending,
-    phase: 'battle-end',
+    phase,
     log: [...battleState.log, ...logEntries],
     result,
   }
+}
+
+/** 만료 효과에 대한 큐 아이템 + 로그 엔트리 생성 */
+function makeExpireItems(
+  expired: ActiveEffect[],
+  side: 'player' | 'enemy',
+  characterName: string,
+  round: number,
+  playerSnapshot: Character,
+  enemySnapshot: Character,
+): { queueItem: ActionQueueItem; logEntry: TurnLogEntry }[] {
+  return expired.map((effect) => {
+    const sign = effect.type === 'buff' ? '+' : '-'
+    const logEntry: TurnLogEntry = {
+      round,
+      actor: side,
+      actorName: characterName,
+      skillType: effect.type,
+      action: `${characterName}의 ${effect.sourceName} 효과(${effect.targetStat.toUpperCase()} ${sign}${effect.amount})가 만료됐다`,
+    }
+    return {
+      logEntry,
+      queueItem: {
+        type: 'effect-expire' as const,
+        actor: side,
+        actorName: characterName,
+        description: logEntry.action,
+        value: effect.amount,
+        targetStat: effect.targetStat,
+        logEntry,
+        playerSnapshot,
+        enemySnapshot,
+      },
+    }
+  })
 }
 
 function resolveSkill(character: Character, action: BattleAction): Skill | null {
