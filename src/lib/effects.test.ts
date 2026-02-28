@@ -3,6 +3,7 @@ import {
   getEffectiveStat,
   tickEffects,
   addEffect,
+  findExpiringEffects,
   resetEffectIdCounter,
 } from './effects'
 import type { ActiveEffect } from '../types'
@@ -94,6 +95,33 @@ describe('tickEffects', () => {
     ]
     tickEffects(effects)
     expect(effects[0].remainingTurns).toBe(2)
+  })
+})
+
+describe('findExpiringEffects', () => {
+  it('빈 배열 → 빈 결과', () => {
+    expect(findExpiringEffects([])).toHaveLength(0)
+  })
+
+  it('remainingTurns === 1인 효과만 반환', () => {
+    const effects: ActiveEffect[] = [
+      { id: '1', type: 'buff', targetStat: 'atk', amount: 5, remainingTurns: 1, sourceName: '분노' },
+      { id: '2', type: 'debuff', targetStat: 'def', amount: 3, remainingTurns: 3, sourceName: '약화' },
+    ]
+    const result = findExpiringEffects(effects)
+    expect(result).toHaveLength(1)
+    expect(result[0].id).toBe('1')
+  })
+
+  it('혼합 (1턴 + 3턴) → 1턴만 반환', () => {
+    const effects: ActiveEffect[] = [
+      { id: '1', type: 'buff', targetStat: 'atk', amount: 5, remainingTurns: 3, sourceName: '분노' },
+      { id: '2', type: 'debuff', targetStat: 'def', amount: 3, remainingTurns: 1, sourceName: '약화' },
+      { id: '3', type: 'buff', targetStat: 'def', amount: 2, remainingTurns: 1, sourceName: '방벽' },
+    ]
+    const result = findExpiringEffects(effects)
+    expect(result).toHaveLength(2)
+    expect(result.map((e) => e.id)).toEqual(['2', '3'])
   })
 })
 
