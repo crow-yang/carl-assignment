@@ -27,11 +27,15 @@ export function CharacterPanel({ character, side, activeEffect }: CharacterPanel
       data-testid={`${testIdPrefix}-panel`}
       className={`p-4 bg-gray-800 rounded-lg border border-gray-700 ${effectClass}`}
     >
-      {/* 캐릭터 이모지 + 이름 */}
+      {/* 캐릭터 아바타 + 이름 */}
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-2xl" aria-hidden="true">
-          {side === 'player' ? '🧑‍⚔️' : '👹'}
-        </span>
+        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl ${
+          side === 'player'
+            ? 'bg-linear-to-br from-blue-600 to-blue-800 ring-2 ring-blue-400'
+            : 'bg-linear-to-br from-red-600 to-red-800 ring-2 ring-red-400'
+        }`}>
+          <span aria-hidden="true">{side === 'player' ? '⚔️' : '👹'}</span>
+        </div>
         <h3
           data-testid={`${testIdPrefix}-name`}
           className="text-base sm:text-lg font-bold"
