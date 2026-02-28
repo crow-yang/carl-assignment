@@ -18,6 +18,9 @@ export function BattlePage() {
   // 큐 소비 중 표시할 캐릭터 스냅샷 (null이면 battleState의 값 사용)
   const [displayPlayer, setDisplayPlayer] = useState<Character | null>(null)
   const [displayEnemy, setDisplayEnemy] = useState<Character | null>(null)
+  // 로그 점진적 공개: 이번 라운드 시작 전 로그 길이 + 공개된 엔트리 수
+  const [prevLogLength, setPrevLogLength] = useState(0)
+  const [revealedCount, setRevealedCount] = useState(0)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // cleanup on unmount
@@ -53,6 +56,7 @@ export function BattlePage() {
       if (item) {
         setDisplayPlayer(item.playerSnapshot)
         setDisplayEnemy(item.enemySnapshot)
+        setRevealedCount((c) => c + 1)
         timerRef.current = setTimeout(consume, QUEUE_DELAY)
       } else {
         // 큐 소비 완료 → 스냅샷 해제, battleState의 최종값으로 복귀
@@ -68,6 +72,7 @@ export function BattlePage() {
     if (first) {
       setDisplayPlayer(first.playerSnapshot)
       setDisplayEnemy(first.enemySnapshot)
+      setRevealedCount(1)
       timerRef.current = setTimeout(consume, QUEUE_DELAY)
     } else {
       setIsAnimating(false)
@@ -76,6 +81,9 @@ export function BattlePage() {
 
   const handleAction = (action: BattleAction) => {
     if (isAnimating || result) return
+    // 현재 라운드 시작 전 로그 길이 저장 → 점진적 공개 기준점
+    setPrevLogLength(log.length)
+    setRevealedCount(0)
     executePlayerAction(action)
     // executePlayerAction은 동기적으로 큐를 채움 → 바로 소비 시작
     startConsuming()
@@ -118,8 +126,10 @@ export function BattlePage() {
           />
         </div>
 
-        {/* 전투 로그 */}
-        <BattleLog log={log} />
+        {/* 전투 로그 — 애니메이션 중엔 큐 소비 속도에 맞춰 점진적 공개 */}
+        <BattleLog
+          log={isAnimating ? log.slice(0, prevLogLength + revealedCount) : log}
+        />
       </div>
     </div>
   )

@@ -83,6 +83,18 @@ describe('battle-store', () => {
       expect(after).toEqual(before)
     })
 
+    it('MP 부족 시 스킬 사용 불가 → 아무 동작 안 함', () => {
+      // MP를 0으로 강제 설정
+      const bs = useBattleStore.getState().battleState!
+      useBattleStore.setState({
+        battleState: { ...bs, player: { ...bs.player, currentMp: 0 } },
+      })
+      const before = useBattleStore.getState().battleState
+      useBattleStore.getState().executePlayerAction({ type: 'skill', skillId: 'fire-slash' })
+      const after = useBattleStore.getState().battleState
+      expect(after).toEqual(before)
+    })
+
     it('result가 있으면 액션 무시', () => {
       // 전투 종료 상태를 임의로 설정
       const bs = useBattleStore.getState().battleState!

@@ -206,3 +206,35 @@
 - TypeScript: 0 에러
 - 유닛 테스트: 133개 통과
 - E2E 테스트: 10개 통과 (14.0s, 이전 대비 2.5s 단축)
+
+---
+
+## 리뷰 사이클 #3: 전투 메커니즘 심화
+
+### 발견 이슈 (3 MEDIUM + 1 LOW)
+
+| # | 우선순위 | 이슈 | 수정 |
+|---|---------|------|------|
+| 1 | MEDIUM | 후공의 방어 플래그가 라운드 종료 시 초기화 → 방어 스킬 낭비 | 후공이 방어 시 해당 플래그를 다음 라운드로 유지 |
+| 2 | MEDIUM | 전투 로그가 큐 소비 전에 전체 공개 → 선공 결과 스포일러 | prevLogLength + revealedCount로 큐 소비 속도에 맞춰 점진적 공개 |
+| 3 | MEDIUM | 적 AI가 선공 결과 전에 행동 결정 | 의도적 설계 (동시 결정 모델) — 보류 |
+| 4 | LOW | MP 부족 시 스킬 사용 불가 테스트 누락 | battle-store.test.ts에 테스트 추가 |
+
+### 기술 상세
+
+**후공 방어 플래그 (battle-store.ts)**
+- 기존: 라운드 종료 시 `playerDefending: false, enemyDefending: false`로 리셋
+- 수정: 후공이 방어한 경우 해당 side의 플래그만 유지, 나머지는 false
+- 효과: 후공 방어 → 다음 라운드 선공 공격에 대해 방어 적용 (1라운드 지속)
+
+**로그 점진적 공개 (BattlePage.tsx)**
+- `prevLogLength`: 액션 실행 전 로그 길이 저장 (state)
+- `revealedCount`: 큐 소비 시 1씩 증가
+- 렌더: `isAnimating ? log.slice(0, prevLogLength + revealedCount) : log`
+- React 19 lint: `useRef` → `useState` 변경 (렌더 중 ref 접근 금지 규칙 준수)
+
+### 검증 결과
+- ESLint: 0 에러
+- TypeScript: 0 에러
+- 유닛 테스트: 134개 통과 (+1 MP 부족 테스트)
+- E2E 테스트: 10개 통과 (13.5s)
