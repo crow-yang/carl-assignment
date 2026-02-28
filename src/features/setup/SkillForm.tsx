@@ -86,6 +86,7 @@ export function SkillForm({ onSubmit, onCancel }: SkillFormProps) {
           {(Object.keys(SKILL_TYPE_LABELS) as CustomSkillType[]).map((t) => (
             <button
               key={t}
+              aria-pressed={type === t}
               onClick={() => setType(t)}
               className={`px-3 py-1 text-xs rounded transition-colors ${
                 type === t

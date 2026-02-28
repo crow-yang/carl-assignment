@@ -63,7 +63,7 @@ function decideNormal(self: Character, rng: () => number): BattleAction {
 
   // HP <= 50%: 방어적 행동
   if (hpRatio <= 0.5) {
-    if (heal && hpRatio <= 0.7 && roll < 0.4) return skillAction(heal.id)
+    if (heal && roll < 0.4) return skillAction(heal.id)
     if (roll < 0.6) return defend()
     if (smash && roll < 0.8) return skillAction(smash.id)
     return basicAttack()

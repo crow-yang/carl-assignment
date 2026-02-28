@@ -24,12 +24,19 @@ test.describe('풀 게임 E2E', () => {
       if (await page.getByTestId('result-title').isVisible().catch(() => false)) break
 
       const btn = page.getByTestId('skill-button-0')
+      // 애니메이션 완료 후 버튼이 활성화될 때까지 대기
       try {
-        await btn.click({ timeout: 5000 })
+        await expect(btn).toBeEnabled({ timeout: 5000 })
+        await btn.click()
       } catch {
         break
       }
-      await page.waitForTimeout(2000)
+      // 큐 소비 애니메이션 완료 대기
+      try {
+        await expect(btn).toBeEnabled({ timeout: 5000 })
+      } catch {
+        break
+      }
     }
 
     // ─── 결과 ────────────────────────────────────────────

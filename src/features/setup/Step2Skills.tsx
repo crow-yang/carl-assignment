@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useSetupStore } from '../../stores/setup-store'
 import { DEFAULT_SKILLS, MAX_CUSTOM_SKILLS } from '../../constants'
 import { SkillForm } from './SkillForm'
-import type { Skill } from '../../types'
+import type { Skill, SkillType } from '../../types'
 
 function getSkillDescription(skill: Skill): string {
   switch (skill.type) {
@@ -21,7 +21,7 @@ function getSkillDescription(skill: Skill): string {
   }
 }
 
-const TYPE_LABELS: Record<string, string> = {
+const TYPE_LABELS: Record<SkillType, string> = {
   attack: '공격',
   defend: '방어',
   heal: '회복',

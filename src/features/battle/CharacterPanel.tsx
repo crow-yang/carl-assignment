@@ -34,7 +34,14 @@ export function CharacterPanel({ character, side }: CharacterPanelProps) {
             {character.currentHp} / {character.baseStats.hp}
           </span>
         </div>
-        <div className="h-3 bg-gray-700 rounded-full overflow-hidden">
+        <div
+          role="progressbar"
+          aria-label={`${character.name} HP`}
+          aria-valuenow={character.currentHp}
+          aria-valuemin={0}
+          aria-valuemax={character.baseStats.hp}
+          className="h-3 bg-gray-700 rounded-full overflow-hidden"
+        >
           <div
             className="h-full bg-red-500 transition-all duration-300"
             style={{ width: `${hpPercent}%` }}
@@ -50,7 +57,14 @@ export function CharacterPanel({ character, side }: CharacterPanelProps) {
             {character.currentMp} / {character.baseStats.mp}
           </span>
         </div>
-        <div className="h-3 bg-gray-700 rounded-full overflow-hidden">
+        <div
+          role="progressbar"
+          aria-label={`${character.name} MP`}
+          aria-valuenow={character.currentMp}
+          aria-valuemin={0}
+          aria-valuemax={character.baseStats.mp}
+          className="h-3 bg-gray-700 rounded-full overflow-hidden"
+        >
           <div
             className="h-full bg-blue-500 transition-all duration-300"
             style={{ width: `${mpPercent}%` }}
