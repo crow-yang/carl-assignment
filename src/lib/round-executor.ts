@@ -69,10 +69,14 @@ export function executeRound(
 
   let updatedPlayer = { ...player }
   let updatedEnemy = { ...enemy }
-  let playerDefending = false
-  let enemyDefending = false
   const queueItems: ActionQueueItem[] = []
   const logEntries: TurnLogEntry[] = []
+
+  // ─── 방어 상태 사전 결정 (양측 동시 선언) ─────
+  // "이번 턴 받는 피해 50% 감소" — 양쪽의 행동 선택은 동시에 이루어지므로,
+  // 후공이 방어를 선택해도 같은 라운드 선공의 공격에 대해 방어가 적용된다.
+  const playerDefending = playerSkill.type === 'defend'
+  const enemyDefending = enemySkill.type === 'defend'
 
   // ─── 선공 실행 ───────────────────────────────
   const first = executeMoverTurn(
@@ -81,8 +85,6 @@ export function executeRound(
   )
   updatedPlayer = first.player
   updatedEnemy = first.enemy
-  if (firstSide === 'player') playerDefending = first.isDefending
-  else enemyDefending = first.isDefending
   queueItems.push(first.queueItem)
   logEntries.push(first.logEntry)
 
@@ -106,8 +108,6 @@ export function executeRound(
   )
   updatedPlayer = second.player
   updatedEnemy = second.enemy
-  if (secondSide === 'player') playerDefending = second.isDefending
-  else enemyDefending = second.isDefending
   queueItems.push(second.queueItem)
   logEntries.push(second.logEntry)
 
@@ -157,14 +157,9 @@ export function executeRound(
       round: roundEndResult ? round : nextRound,
       player: updatedPlayer,
       enemy: updatedEnemy,
-      // ── 후공 방어 carry ──
-      // 후공의 방어는 다음 라운드 선공의 공격에 대해 유효하다.
-      // 설계 의도: 후공이 방어를 선택하면 해당 라운드에서는 이미 선공이 행동한 뒤이므로,
-      // 방어 효과가 즉시 적용될 기회가 없다. 이를 보상하기 위해 다음 라운드 선공의
-      // 공격까지 방어가 유지된다. 선공의 방어는 같은 라운드 후공 공격에 바로 적용되므로
-      // carry하지 않는다 (리셋).
-      playerDefending: secondSide === 'player' ? playerDefending : false,
-      enemyDefending: secondSide === 'enemy' ? enemyDefending : false,
+      // 방어는 이번 라운드에서만 유효하고 다음 라운드에 이월하지 않는다.
+      playerDefending: false,
+      enemyDefending: false,
       isPlayerFirst: newIsPlayerFirst,
       phase: newPhase,
       log: [...battleState.log, ...logEntries],

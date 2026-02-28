@@ -197,17 +197,15 @@ describe('executeRound — effect-expire', () => {
   })
 })
 
-describe('executeRound — 후공 방어 carry', () => {
-  it('후공이 방어 → 다음 라운드 battleState에 defending 유지', () => {
-    // 플레이어가 선공, 적이 후공
-    // 적이 방어를 선택하도록 rng 조작 — rng가 높으면 방어 선택 확률 증가
-    // 단, 적 AI 로직에 따라 다를 수 있으므로, 직접 적에게 방어 스킬만 남김
+describe('executeRound — 방어 동시 선언', () => {
+  it('후공이 방어 → 같은 라운드 선공 공격에 방어 적용 (데미지 감소)', () => {
+    // 플레이어(선공) 공격, 적(후공) 방어만 가능
     const state = makeBattleState({
       isPlayerFirst: true,
-      player: makeCharacter({ name: '플레이어', baseStats: { hp: 100, mp: 50, atk: 15, def: 10, spd: 15 } }),
+      player: makeCharacter({ name: '플레이어', baseStats: { hp: 100, mp: 50, atk: 20, def: 10, spd: 15 } }),
       enemy: makeCharacter({
         name: '적',
-        skills: [DEFAULT_DEFEND_SKILL], // 적이 방어밖에 못 함
+        skills: [DEFAULT_DEFEND_SKILL],
         baseStats: { hp: 100, mp: 50, atk: 10, def: 10, spd: 5 },
       }),
     })
@@ -215,9 +213,50 @@ describe('executeRound — 후공 방어 carry', () => {
     const result = executeRound(state, { type: 'attack' }, 'easy', () => 0)
     expect(result).not.toBeNull()
 
-    // 적(후공)이 방어했으므로 enemyDefending이 true여야 함
-    expect(result!.battleState.enemyDefending).toBe(true)
-    // 플레이어(선공)의 방어는 carry되지 않음
+    // 방어 동시 선언이므로 데미지가 50% 감소됨
+    // damage = floor((20*1.0 - 10*0.5) * 0.5) = floor(15 * 0.5) = 7
+    const damageItem = result!.actionQueue.find((q) => q.type === 'damage')
+    expect(damageItem!.value).toBe(7)
+  })
+
+  it('방어 없이 공격 → 방어 미적용 데미지', () => {
+    // 동일 스탯에서 방어 없이 공격
+    const state = makeBattleState({
+      isPlayerFirst: true,
+      player: makeCharacter({ name: '플레이어', baseStats: { hp: 100, mp: 50, atk: 20, def: 10, spd: 15 } }),
+      enemy: makeCharacter({
+        name: '적',
+        skills: [defaultAttack, DEFAULT_DEFEND_SKILL],
+        baseStats: { hp: 100, mp: 50, atk: 10, def: 10, spd: 5 },
+      }),
+    })
+
+    // rng=0 → 적이 방어 안 함 (easy: 0 < 0.1 → defend... actually 0 < 0.1 is true → defend)
+    // rng=0.5 → 적이 기본공격 (0.5 >= 0.3 → basicAttack)
+    const result = executeRound(state, { type: 'attack' }, 'easy', () => 0.5)
+    expect(result).not.toBeNull()
+
+    // 방어 없이: damage = floor((20*1.0 - 10*0.5) * 1.0) = floor(15) = 15
+    const damageItem = result!.actionQueue.find((q) => q.type === 'damage' && q.actor === 'player')
+    expect(damageItem!.value).toBe(15)
+  })
+
+  it('라운드 종료 시 defending 플래그는 항상 false', () => {
+    const state = makeBattleState({
+      isPlayerFirst: true,
+      player: makeCharacter({ name: '플레이어', baseStats: { hp: 100, mp: 50, atk: 15, def: 10, spd: 15 } }),
+      enemy: makeCharacter({
+        name: '적',
+        skills: [DEFAULT_DEFEND_SKILL],
+        baseStats: { hp: 100, mp: 50, atk: 10, def: 10, spd: 5 },
+      }),
+    })
+
+    const result = executeRound(state, { type: 'defend' }, 'easy', () => 0)
+    expect(result).not.toBeNull()
+
+    // 양쪽 모두 방어했더라도 다음 라운드에는 리셋
     expect(result!.battleState.playerDefending).toBe(false)
+    expect(result!.battleState.enemyDefending).toBe(false)
   })
 })
