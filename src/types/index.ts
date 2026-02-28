@@ -142,4 +142,7 @@ export interface ActionQueueItem {
   value?: number
   targetStat?: BuffTargetStat
   logEntry: TurnLogEntry
+  /** 이 액션 실행 직후 시점의 캐릭터 스냅샷 (점진적 HP 바 연출용) */
+  playerSnapshot: Character
+  enemySnapshot: Character
 }

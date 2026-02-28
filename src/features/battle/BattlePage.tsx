@@ -4,7 +4,7 @@ import { useGameStore } from '../../stores/game-store'
 import { CharacterPanel } from './CharacterPanel'
 import { ActionPanel } from './ActionPanel'
 import { BattleLog } from './BattleLog'
-import type { BattleAction } from '../../types'
+import type { BattleAction, Character } from '../../types'
 
 const QUEUE_DELAY = 600 // ms between queue items
 
@@ -15,6 +15,9 @@ export function BattlePage() {
   const setPhase = useGameStore((s) => s.setPhase)
 
   const [isAnimating, setIsAnimating] = useState(false)
+  // 큐 소비 중 표시할 캐릭터 스냅샷 (null이면 battleState의 값 사용)
+  const [displayPlayer, setDisplayPlayer] = useState<Character | null>(null)
+  const [displayEnemy, setDisplayEnemy] = useState<Character | null>(null)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // cleanup on unmount
@@ -37,14 +40,24 @@ export function BattlePage() {
   const { player, enemy, round, result, log } = battleState
 
   // 큐 순차 소비 — 이벤트 핸들러에서 직접 호출 (effect 아님)
+  //
+  // 흐름:
+  //   handleAction → executePlayerAction(동기, 큐 적재)
+  //     → startConsuming → processQueue → 스냅샷 적용
+  //       → QUEUE_DELAY 후 다음 아이템 ... → 큐 비면 스냅샷 해제
   const startConsuming = () => {
     setIsAnimating(true)
 
     const consume = () => {
       const item = processQueue()
       if (item) {
+        setDisplayPlayer(item.playerSnapshot)
+        setDisplayEnemy(item.enemySnapshot)
         timerRef.current = setTimeout(consume, QUEUE_DELAY)
       } else {
+        // 큐 소비 완료 → 스냅샷 해제, battleState의 최종값으로 복귀
+        setDisplayPlayer(null)
+        setDisplayEnemy(null)
         setIsAnimating(false)
         timerRef.current = null
       }
@@ -53,6 +66,8 @@ export function BattlePage() {
     // 첫 아이템 즉시 처리
     const first = processQueue()
     if (first) {
+      setDisplayPlayer(first.playerSnapshot)
+      setDisplayEnemy(first.enemySnapshot)
       timerRef.current = setTimeout(consume, QUEUE_DELAY)
     } else {
       setIsAnimating(false)
@@ -65,6 +80,10 @@ export function BattlePage() {
     // executePlayerAction은 동기적으로 큐를 채움 → 바로 소비 시작
     startConsuming()
   }
+
+  // 애니메이션 중이면 스냅샷 표시, 아니면 battleState의 최종값
+  const shownPlayer = displayPlayer ?? player
+  const shownEnemy = displayEnemy ?? enemy
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -86,8 +105,8 @@ export function BattlePage() {
 
         {/* 캐릭터 패널 */}
         <div className="grid grid-cols-2 gap-4">
-          <CharacterPanel character={player} side="player" />
-          <CharacterPanel character={enemy} side="enemy" />
+          <CharacterPanel character={shownPlayer} side="player" />
+          <CharacterPanel character={shownEnemy} side="enemy" />
         </div>
 
         {/* 액션 패널 */}

@@ -1,6 +1,15 @@
 import { describe, it, expect } from 'vitest'
 import { createQueue, enqueue, enqueueAll, dequeue, isQueueEmpty, queueSize } from './action-queue'
-import type { ActionQueueItem, TurnLogEntry } from '../types'
+import type { ActionQueueItem, TurnLogEntry, Character } from '../types'
+
+const stubCharacter: Character = {
+  name: '용사',
+  baseStats: { hp: 100, mp: 50, atk: 20, def: 15, spd: 15 },
+  currentHp: 100,
+  currentMp: 50,
+  skills: [],
+  activeEffects: [],
+}
 
 function makeItem(description: string): ActionQueueItem {
   const logEntry: TurnLogEntry = {
@@ -16,6 +25,8 @@ function makeItem(description: string): ActionQueueItem {
     description,
     value: 10,
     logEntry,
+    playerSnapshot: stubCharacter,
+    enemySnapshot: stubCharacter,
   }
 }
 

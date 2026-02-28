@@ -122,7 +122,7 @@ export const useBattleStore = create<BattleStoreState & BattleStoreActions>((set
       updatedPlayer = applyTargetResult(updatedPlayer, firstResult)
     }
 
-    queueItems.push(toQueueItem(firstResult.logEntry, firstAction.side))
+    queueItems.push(toQueueItem(firstResult.logEntry, firstAction.side, updatedPlayer, updatedEnemy))
     logEntries.push(firstResult.logEntry)
 
     // 선공 후 사망 확인
@@ -165,7 +165,7 @@ export const useBattleStore = create<BattleStoreState & BattleStoreActions>((set
       updatedPlayer = applyTargetResult(updatedPlayer, secondResult)
     }
 
-    queueItems.push(toQueueItem(secondResult.logEntry, secondAction.side))
+    queueItems.push(toQueueItem(secondResult.logEntry, secondAction.side, updatedPlayer, updatedEnemy))
     logEntries.push(secondResult.logEntry)
 
     // 후공 후 사망 확인
@@ -270,7 +270,12 @@ function applyTargetResult(target: Character, result: SkillExecutionResult): Cha
   }
 }
 
-function toQueueItem(logEntry: TurnLogEntry, side: 'player' | 'enemy'): ActionQueueItem {
+function toQueueItem(
+  logEntry: TurnLogEntry,
+  side: 'player' | 'enemy',
+  playerSnapshot: Character,
+  enemySnapshot: Character,
+): ActionQueueItem {
   return {
     type: logEntry.damage ? 'damage' : logEntry.heal ? 'heal' : 'defend',
     actor: side,
@@ -278,5 +283,7 @@ function toQueueItem(logEntry: TurnLogEntry, side: 'player' | 'enemy'): ActionQu
     description: logEntry.action,
     value: logEntry.damage ?? logEntry.heal,
     logEntry,
+    playerSnapshot,
+    enemySnapshot,
   }
 }
