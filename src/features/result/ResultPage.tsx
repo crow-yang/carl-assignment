@@ -41,10 +41,9 @@ export function ResultPage() {
   const resetSetup = useSetupStore((s) => s.reset)
   const setPhase = useGameStore((s) => s.setPhase)
 
-  const result = battleState?.result ?? null
-  const totalRounds = battleState?.round ?? 0
+  if (!battleState?.result) return null
 
-  if (!result) return null
+  const { result, round: totalRounds, player, enemy, log } = battleState
 
   const handleRestart = () => {
     resetBattle()
@@ -52,8 +51,8 @@ export function ResultPage() {
     setPhase('setup')
   }
 
-  const playerStats = getBattleStats(battleState!.log, 'player')
-  const enemyStats = getBattleStats(battleState!.log, 'enemy')
+  const playerStats = getBattleStats(log, 'player')
+  const enemyStats = getBattleStats(log, 'enemy')
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
@@ -76,18 +75,18 @@ export function ResultPage() {
         {/* 전투 리캡 */}
         <div className="p-4 bg-gray-800/80 rounded-xl border border-gray-700/50 space-y-3 text-left">
           <h2 className="text-sm font-semibold text-gray-300 text-center">전투 요약</h2>
-          <HpBar character={battleState!.player} side="player" />
-          <HpBar character={battleState!.enemy} side="enemy" />
+          <HpBar character={player} side="player" />
+          <HpBar character={enemy} side="enemy" />
           <div className="grid grid-cols-2 gap-3 pt-2 border-t border-gray-700/50">
             <div className="text-xs space-y-1">
-              <p className="text-blue-400 font-medium">{battleState!.player.name}</p>
+              <p className="text-blue-400 font-medium">{player.name}</p>
               <p className="text-gray-400">총 데미지: <span className="text-white">{playerStats.totalDamage}</span></p>
               {playerStats.totalHeal > 0 && (
                 <p className="text-gray-400">총 회복: <span className="text-green-400">{playerStats.totalHeal}</span></p>
               )}
             </div>
             <div className="text-xs space-y-1">
-              <p className="text-red-400 font-medium">{battleState!.enemy.name}</p>
+              <p className="text-red-400 font-medium">{enemy.name}</p>
               <p className="text-gray-400">총 데미지: <span className="text-white">{enemyStats.totalDamage}</span></p>
               {enemyStats.totalHeal > 0 && (
                 <p className="text-gray-400">총 회복: <span className="text-green-400">{enemyStats.totalHeal}</span></p>
