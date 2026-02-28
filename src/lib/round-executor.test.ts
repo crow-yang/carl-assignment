@@ -24,8 +24,6 @@ function makeBattleState(overrides: Partial<BattleState> = {}): BattleState {
     round: 1,
     player: makeCharacter({ name: '플레이어' }),
     enemy: makeCharacter({ name: '적' }),
-    playerDefending: false,
-    enemyDefending: false,
     isPlayerFirst: true,
     phase: 'player-action',
     log: [],
@@ -241,7 +239,7 @@ describe('executeRound — 방어 동시 선언', () => {
     expect(damageItem!.value).toBe(15)
   })
 
-  it('라운드 종료 시 defending 플래그는 항상 false', () => {
+  it('방어 상태는 라운드 내에서만 유효 (BattleState에 이월되지 않음)', () => {
     const state = makeBattleState({
       isPlayerFirst: true,
       player: makeCharacter({ name: '플레이어', baseStats: { hp: 100, mp: 50, atk: 15, def: 10, spd: 15 } }),
@@ -255,8 +253,9 @@ describe('executeRound — 방어 동시 선언', () => {
     const result = executeRound(state, { type: 'defend' }, 'easy', () => 0)
     expect(result).not.toBeNull()
 
-    // 양쪽 모두 방어했더라도 다음 라운드에는 리셋
-    expect(result!.battleState.playerDefending).toBe(false)
-    expect(result!.battleState.enemyDefending).toBe(false)
+    // BattleState에 defending 필드가 없으므로 다음 라운드에 이월되지 않음을 확인
+    // (방어 상태는 라운드 실행 중 로컬 변수로만 관리됨)
+    expect(result!.battleState).not.toHaveProperty('playerDefending')
+    expect(result!.battleState).not.toHaveProperty('enemyDefending')
   })
 })

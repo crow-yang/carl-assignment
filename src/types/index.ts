@@ -123,8 +123,6 @@ export interface BattleState {
   round: number
   player: Character
   enemy: Character
-  playerDefending: boolean
-  enemyDefending: boolean
   isPlayerFirst: boolean
   phase: BattlePhase
   log: TurnLogEntry[]

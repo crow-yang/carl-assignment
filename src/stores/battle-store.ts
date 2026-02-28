@@ -57,8 +57,6 @@ export const useBattleStore = create<BattleStoreState & BattleStoreActions>((set
       round: 1,
       player,
       enemy,
-      playerDefending: false,
-      enemyDefending: false,
       isPlayerFirst,
       phase: 'player-action', // 항상 플레이어가 먼저 입력 (UI 흐름)
       log: [],

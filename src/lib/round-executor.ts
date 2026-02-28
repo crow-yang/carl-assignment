@@ -96,7 +96,7 @@ export function executeRound(
       { isPlayerFirst, isFirstAction: true, targetDead: true, roundExceeded: false },
     )
     return {
-      battleState: makeBattleEndState(battleState, updatedPlayer, updatedEnemy, playerDefending, enemyDefending, logEntries, midResult, midPhase),
+      battleState: makeBattleEndState(battleState, updatedPlayer, updatedEnemy, logEntries, midResult, midPhase),
       actionQueue: queueItems,
     }
   }
@@ -119,7 +119,7 @@ export function executeRound(
       { isPlayerFirst, isFirstAction: false, targetDead: true, roundExceeded: false },
     )
     return {
-      battleState: makeBattleEndState(battleState, updatedPlayer, updatedEnemy, playerDefending, enemyDefending, logEntries, endResult, endPhase),
+      battleState: makeBattleEndState(battleState, updatedPlayer, updatedEnemy, logEntries, endResult, endPhase),
       actionQueue: queueItems,
     }
   }
@@ -157,9 +157,6 @@ export function executeRound(
       round: roundEndResult ? round : nextRound,
       player: updatedPlayer,
       enemy: updatedEnemy,
-      // 방어는 이번 라운드에서만 유효하고 다음 라운드에 이월하지 않는다.
-      playerDefending: false,
-      enemyDefending: false,
       isPlayerFirst: newIsPlayerFirst,
       phase: newPhase,
       log: [...battleState.log, ...logEntries],
@@ -207,8 +204,6 @@ function makeBattleEndState(
   battleState: BattleState,
   player: Character,
   enemy: Character,
-  playerDefending: boolean,
-  enemyDefending: boolean,
   logEntries: TurnLogEntry[],
   result: BattleResult,
   phase: BattlePhase,
@@ -217,8 +212,6 @@ function makeBattleEndState(
     ...battleState,
     player,
     enemy,
-    playerDefending,
-    enemyDefending,
     phase,
     log: [...battleState.log, ...logEntries],
     result,
