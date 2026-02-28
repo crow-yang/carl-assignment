@@ -30,8 +30,9 @@ describe('checkBattleEnd', () => {
     expect(checkBattleEnd(-5, 50, 5)).toBe('defeat')
   })
 
-  it('양쪽 모두 HP ≤ 0 → 패배 (플레이어 우선 확인)', () => {
-    expect(checkBattleEnd(0, 0, 5)).toBe('defeat')
+  it('양쪽 모두 HP ≤ 0 → 무승부 (공정성)', () => {
+    expect(checkBattleEnd(0, 0, 5)).toBe('draw')
+    expect(checkBattleEnd(-5, -10, 3)).toBe('draw')
   })
 
   it('20턴 초과 → 무승부', () => {
