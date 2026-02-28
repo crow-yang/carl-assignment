@@ -21,6 +21,39 @@ function getSkillDescription(skill: Skill): string {
   }
 }
 
+function SkillCard({ skill, isCustom, onRemove }: {
+  skill: Skill
+  isCustom?: boolean
+  onRemove?: () => void
+}) {
+  return (
+    <div className={`flex items-center justify-between p-3 bg-gray-800 rounded-lg border ${
+      isCustom ? 'border-blue-900' : 'border-gray-700'
+    }`}>
+      <div>
+        <span className="font-medium">{skill.name}</span>
+        <span className={`ml-2 text-xs px-2 py-0.5 rounded ${
+          isCustom ? 'bg-blue-900 text-blue-300' : 'bg-gray-700 text-gray-400'
+        }`}>
+          {SKILL_TYPE_LABELS[skill.type]}
+        </span>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="text-sm text-gray-400">{getSkillDescription(skill)}</span>
+        {onRemove && (
+          <button
+            data-testid="remove-skill-button"
+            onClick={onRemove}
+            className="text-red-400 hover:text-red-300 text-sm transition-colors"
+          >
+            삭제
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function Step2Skills() {
   const customSkills = useSetupStore((s) => s.customSkills)
   const addCustomSkill = useSetupStore((s) => s.addCustomSkill)
@@ -39,18 +72,7 @@ export function Step2Skills() {
         <h3 className="text-lg font-semibold mb-3">기본 스킬</h3>
         <div className="space-y-2">
           {DEFAULT_SKILLS.map((skill) => (
-            <div
-              key={skill.id}
-              className="flex items-center justify-between p-3 bg-gray-800 rounded-lg border border-gray-700"
-            >
-              <div>
-                <span className="font-medium">{skill.name}</span>
-                <span className="ml-2 text-xs px-2 py-0.5 bg-gray-700 rounded text-gray-400">
-                  {SKILL_TYPE_LABELS[skill.type]}
-                </span>
-              </div>
-              <span className="text-sm text-gray-400">{getSkillDescription(skill)}</span>
-            </div>
+            <SkillCard key={skill.id} skill={skill} />
           ))}
         </div>
       </div>
@@ -76,27 +98,12 @@ export function Step2Skills() {
         {customSkills.length > 0 && (
           <div className="space-y-2 mb-4">
             {customSkills.map((skill) => (
-              <div
+              <SkillCard
                 key={skill.id}
-                className="flex items-center justify-between p-3 bg-gray-800 rounded-lg border border-blue-900"
-              >
-                <div>
-                  <span className="font-medium">{skill.name}</span>
-                  <span className="ml-2 text-xs px-2 py-0.5 bg-blue-900 rounded text-blue-300">
-                    {SKILL_TYPE_LABELS[skill.type]}
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-gray-400">{getSkillDescription(skill)}</span>
-                  <button
-                    data-testid="remove-skill-button"
-                    onClick={() => removeCustomSkill(skill.id)}
-                    className="text-red-400 hover:text-red-300 text-sm transition-colors"
-                  >
-                    삭제
-                  </button>
-                </div>
-              </div>
+                skill={skill}
+                isCustom
+                onRemove={() => removeCustomSkill(skill.id)}
+              />
             ))}
           </div>
         )}
