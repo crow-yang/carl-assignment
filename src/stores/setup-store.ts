@@ -58,6 +58,7 @@ export const useSetupStore = create<SetupState & SetupActions>((set, get) => ({
   setName: (name) => set({ name }),
 
   setStat: (stat, value) => {
+    if (Number.isNaN(value)) return
     const range = STAT_RANGES[stat]
     const clamped = Math.max(range.min, Math.min(range.max, value))
     set((s) => {

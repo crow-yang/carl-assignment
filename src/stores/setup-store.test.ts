@@ -67,6 +67,12 @@ describe('setup-store', () => {
     expect(useSetupStore.getState().stats.hp).toBe(STAT_RANGES.hp.max)
   })
 
+  it('setStat: NaN 입력 시 무시', () => {
+    useSetupStore.getState().setStat('hp', 50)
+    useSetupStore.getState().setStat('hp', NaN)
+    expect(useSetupStore.getState().stats.hp).toBe(50)
+  })
+
   // ─── 잔여 포인트 ──────────────────────────────────────
   it('selectRemainingPoints: 초기값', () => {
     const remaining = selectRemainingPoints(useSetupStore.getState())

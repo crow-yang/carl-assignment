@@ -20,21 +20,31 @@ interface SkillFormProps {
 
 const CUSTOM_SKILL_TYPES: CustomSkillType[] = ['attack', 'heal', 'buff', 'debuff']
 
-function NumberInput({ label, width = 'w-24', ...props }: {
+/** NaN 안전 파싱: 빈 문자열이나 유효하지 않은 입력 시 fallback 반환 */
+function safeParseNumber(value: string, fallback: number): number {
+  const parsed = Number(value)
+  return Number.isNaN(parsed) ? fallback : parsed
+}
+
+function NumberInput({ label, width = 'w-24', onSafeChange, ...props }: {
   label: string
   width?: string
   min: number
   max: number
   step?: number
   value: number
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onSafeChange: (value: number) => void
 }) {
   return (
     <div>
       <label className="block text-xs text-gray-400 mb-1">{label}</label>
       <input
         type="number"
-        {...props}
+        min={props.min}
+        max={props.max}
+        step={props.step}
+        value={props.value}
+        onChange={(e) => onSafeChange(safeParseNumber(e.target.value, props.min))}
         className={`${width} px-3 py-1.5 bg-gray-900 border border-gray-600 rounded text-white text-sm focus:outline-none focus:border-blue-500`}
       />
     </div>
@@ -112,15 +122,15 @@ export function SkillForm({ onSubmit, onCancel }: SkillFormProps) {
       </div>
 
       {/* MP 소모 */}
-      <NumberInput label="MP 소모 (1~30)" min={1} max={30} value={mpCost} onChange={(e) => setMpCost(Number(e.target.value))} />
+      <NumberInput label="MP 소모 (1~30)" min={1} max={30} value={mpCost} onSafeChange={setMpCost} />
 
       {/* 타입별 추가 필드 */}
       {type === 'attack' && (
-        <NumberInput label="배율 (1.0~3.0)" min={1.0} max={3.0} step={0.1} value={multiplier} onChange={(e) => setMultiplier(Number(e.target.value))} />
+        <NumberInput label="배율 (1.0~3.0)" min={1.0} max={3.0} step={0.1} value={multiplier} onSafeChange={setMultiplier} />
       )}
 
       {type === 'heal' && (
-        <NumberInput label="회복량 (10~50)" min={10} max={50} value={healAmount} onChange={(e) => setHealAmount(Number(e.target.value))} />
+        <NumberInput label="회복량 (10~50)" min={10} max={50} value={healAmount} onSafeChange={setHealAmount} />
       )}
 
       {(type === 'buff' || type === 'debuff') && (
@@ -145,8 +155,8 @@ export function SkillForm({ onSubmit, onCancel }: SkillFormProps) {
             </div>
           </div>
           <div className="flex gap-4">
-            <NumberInput label="수치 (1~10)" min={1} max={10} value={amount} onChange={(e) => setAmount(Number(e.target.value))} width="w-20" />
-            <NumberInput label="지속 턴 (1~5)" min={1} max={5} value={duration} onChange={(e) => setDuration(Number(e.target.value))} width="w-20" />
+            <NumberInput label="수치 (1~10)" min={1} max={10} value={amount} onSafeChange={setAmount} width="w-20" />
+            <NumberInput label="지속 턴 (1~5)" min={1} max={5} value={duration} onSafeChange={setDuration} width="w-20" />
           </div>
         </div>
       )}
