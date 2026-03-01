@@ -125,10 +125,9 @@ test.describe('전투 플로우', () => {
       }
     }
 
-    // 전투 로그에 적의 행동이 기록되어야 함
+    // 전투 로그에 적(드래곤 나이트)의 행동이 기록되어야 함
     const log = page.getByTestId('battle-log')
-    const logText = await log.textContent()
-    expect(logText?.length).toBeGreaterThan(0)
+    await expect(log).toContainText('드래곤 나이트')
   })
 
   test('MP 부족 시 스킬 버튼 비활성화', async ({ page }) => {

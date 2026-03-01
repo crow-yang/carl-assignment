@@ -152,6 +152,29 @@ test.describe('엣지 케이스: 전투 결과 화면 상세', () => {
   })
 })
 
+test.describe('엣지 케이스: 20라운드 무승부', () => {
+  test('양쪽 모두 생존 시 20라운드 초과 → 무승부', async ({ page }, testInfo) => {
+    testInfo.setTimeout(60000)
+    // 고DEF + 저ATK 빌드: 양쪽 데미지 1씩 → 20라운드 안에 사망 불가
+    // 플레이어: HP 100, DEF 30 → 적(ATK 10) 데미지 max(1, 10-15)=1
+    // 적(easy): HP 80, DEF 8 → 플레이어(ATK 5) 데미지 max(1, 5-4)=1
+    // 합계: 100+35+5+30+30=200
+    await setupAndStartBattle(page, {
+      stats: { hp: '100', mp: '35', atk: '5', def: '30', spd: '30' },
+      difficulty: 'easy',
+    })
+
+    // 20라운드까지 기본 공격으로 진행
+    await playUntilResult(page)
+
+    // 무승부 결과 확인
+    await expect(page.getByTestId('result-title')).toHaveText('무승부')
+
+    // 총 라운드 수가 20턴이어야 함
+    await expect(page.getByTestId('result-turns')).toContainText('20턴')
+  })
+})
+
 test.describe('엣지 케이스: 방어 행동', () => {
   test('방어만으로 여러 턴 버티기', async ({ page }) => {
     await setupAndStartBattle(page, {
