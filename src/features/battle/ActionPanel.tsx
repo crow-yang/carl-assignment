@@ -1,4 +1,4 @@
-import type { Character, BattleAction, SkillType } from '../../types'
+import type { Character, BattleAction, SkillType, Skill } from '../../types'
 
 const SKILL_ICON: Record<SkillType, string> = {
   attack: '⚔️',
@@ -14,6 +14,22 @@ const SKILL_BUTTON_STYLE: Record<SkillType, string> = {
   heal:   'bg-green-700/90 hover:bg-green-600 border-green-500/30 shadow-md shadow-green-900/30',
   buff:   'bg-yellow-700/90 hover:bg-yellow-600 border-yellow-500/30 shadow-md shadow-yellow-900/30',
   debuff: 'bg-purple-700/90 hover:bg-purple-600 border-purple-500/30 shadow-md shadow-purple-900/30',
+}
+
+/** 스킬 상세 설명 (버튼 내 인라인 표시 — 모바일 터치에서도 확인 가능) */
+function getSkillDescription(skill: Skill): string {
+  switch (skill.type) {
+    case 'attack':
+      return skill.isDefault ? 'ATK ×1.0' : `ATK ×${skill.multiplier}`
+    case 'defend':
+      return '피해 50% 감소'
+    case 'heal':
+      return `HP +${skill.healAmount}`
+    case 'buff':
+      return `${skill.targetStat.toUpperCase()} +${skill.amount} (${skill.duration}턴)`
+    case 'debuff':
+      return `${skill.targetStat.toUpperCase()} -${skill.amount} (${skill.duration}턴)`
+  }
 }
 
 interface ActionPanelProps {
@@ -57,6 +73,7 @@ export function ActionPanel({ player, onAction, disabled }: ActionPanelProps) {
                 MP {skill.mpCost}
               </span>
             )}
+            <span className="block text-[10px] mt-0.5 opacity-70">{getSkillDescription(skill)}</span>
           </button>
         )
       })}
