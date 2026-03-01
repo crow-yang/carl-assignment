@@ -1,4 +1,4 @@
-import { useReducer } from 'react'
+import { useReducer, useState } from 'react'
 import { SKILL_TYPE_LABELS } from '../../constants'
 import { validateCustomSkill } from '../../lib/validation'
 import type { CustomSkillFormData } from '../../schemas'
@@ -54,12 +54,6 @@ function formReducer(state: SkillFormState, action: SkillFormAction): SkillFormS
   return { ...state, [action.field]: action.value }
 }
 
-/** NaN 안전 파싱: 빈 문자열이나 유효하지 않은 입력 시 fallback 반환 */
-function safeParseNumber(value: string, fallback: number): number {
-  const parsed = Number(value)
-  return Number.isNaN(parsed) ? fallback : parsed
-}
-
 function NumberInput({ label, width = 'w-24', onSafeChange, ...props }: {
   label: string
   width?: string
@@ -69,6 +63,14 @@ function NumberInput({ label, width = 'w-24', onSafeChange, ...props }: {
   value: number
   onSafeChange: (value: number) => void
 }) {
+  const [display, setDisplay] = useState(String(props.value))
+  const [prevValue, setPrevValue] = useState(props.value)
+
+  if (prevValue !== props.value) {
+    setPrevValue(props.value)
+    setDisplay(String(props.value))
+  }
+
   return (
     <div>
       <label className="block text-xs text-gray-400 mb-1">{label}</label>
@@ -77,8 +79,37 @@ function NumberInput({ label, width = 'w-24', onSafeChange, ...props }: {
         min={props.min}
         max={props.max}
         step={props.step}
-        value={props.value}
-        onChange={(e) => onSafeChange(safeParseNumber(e.target.value, props.min))}
+        value={display}
+        onChange={(e) => {
+          const raw = e.target.value
+          const parsed = Number(raw)
+          if (raw === '' || Number.isNaN(parsed)) {
+            setDisplay(raw)
+            return
+          }
+          // max 초과 시 max로 캡
+          if (parsed > props.max) {
+            setDisplay(String(props.max))
+            onSafeChange(props.max)
+            return
+          }
+          setDisplay(raw)
+          onSafeChange(parsed)
+        }}
+        onBlur={() => {
+          // blur 시 min~max 범위로 클램핑
+          const parsed = Number(display)
+          if (display === '' || Number.isNaN(parsed)) {
+            onSafeChange(props.min)
+            setDisplay(String(props.min))
+            return
+          }
+          const clamped = Math.max(props.min, Math.min(props.max, parsed))
+          if (clamped !== props.value) {
+            onSafeChange(clamped)
+          }
+          setDisplay(String(clamped))
+        }}
         className={`${width} px-3 py-1.5 bg-gray-900 border border-gray-600 rounded text-white text-sm focus:outline-none focus:border-blue-500`}
       />
     </div>
@@ -209,10 +240,13 @@ export function SkillForm({ onSubmit, onCancel }: SkillFormProps) {
         </button>
       </div>
 
-      {/* 검증 에러 메시지 */}
-      {!validation.valid && form.name.length > 0 && (
-        <p className="text-sm text-red-400">{validation.errors[0]}</p>
-      )}
+      {/* 검증 에러 메시지 — 이름 미입력 시에도 수치 관련 에러는 표시 */}
+      {!validation.valid && (() => {
+        const errors = form.name.length > 0
+          ? validation.errors
+          : validation.errors.filter((e) => !e.includes('이름'))
+        return errors.length > 0 ? <p className="text-sm text-red-400">{errors[0]}</p> : null
+      })()}
     </form>
   )
 }

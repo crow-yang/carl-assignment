@@ -1,6 +1,67 @@
+import { useState } from 'react'
 import { useSetupStore, selectRemainingPoints } from '../../stores/setup-store'
 import { STAT_KEYS, STAT_RANGES, STAT_LABELS, TOTAL_STAT_POINTS } from '../../constants'
 import { validateName } from '../../lib/validation'
+
+/** 로컬 string state로 display를 분리하여 leading zero 방지 */
+function StatNumberInput({ testId, ariaLabel, min, max, value, onChange, className }: {
+  testId: string
+  ariaLabel: string
+  min: number
+  max: number
+  value: number
+  onChange: (value: number) => void
+  className: string
+}) {
+  const [display, setDisplay] = useState(String(value))
+  const [prevValue, setPrevValue] = useState(value)
+
+  if (prevValue !== value) {
+    setPrevValue(value)
+    setDisplay(String(value))
+  }
+
+  return (
+    <input
+      data-testid={testId}
+      type="number"
+      aria-label={ariaLabel}
+      min={min}
+      max={max}
+      value={display}
+      onChange={(e) => {
+        const raw = e.target.value
+        const parsed = Number(raw)
+        if (raw === '' || Number.isNaN(parsed)) {
+          setDisplay(raw)
+          return
+        }
+        // max 초과 시 max로 캡
+        if (parsed > max) {
+          setDisplay(String(max))
+          onChange(max)
+          return
+        }
+        setDisplay(raw)
+        onChange(parsed)
+      }}
+      onBlur={() => {
+        const parsed = Number(display)
+        if (display === '' || Number.isNaN(parsed)) {
+          setDisplay(String(value))
+          return
+        }
+        if (parsed < min) {
+          onChange(min)
+          setDisplay(String(min))
+          return
+        }
+        setDisplay(String(value))
+      }}
+      className={className}
+    />
+  )
+}
 
 export function Step1NameAndStats() {
   const name = useSetupStore((s) => s.name)
@@ -75,14 +136,13 @@ export function Step1NameAndStats() {
                   onChange={(e) => setStat(stat, Number(e.target.value))}
                   className="flex-1 accent-blue-500"
                 />
-                <input
-                  data-testid={`stat-${stat}`}
-                  type="number"
-                  aria-label={`${statLabel} 수치 입력`}
+                <StatNumberInput
+                  testId={`stat-${stat}`}
+                  ariaLabel={`${statLabel} 수치 입력`}
                   min={range.min}
                   max={range.max}
                   value={stats[stat]}
-                  onChange={(e) => setStat(stat, Number(e.target.value))}
+                  onChange={(v) => setStat(stat, v)}
                   className={`w-16 px-2 py-1 bg-gray-800 border rounded text-center text-white focus:outline-none focus:border-blue-500 ${
                     atMax ? 'border-yellow-500/60' : 'border-gray-600'
                   }`}
